@@ -49,6 +49,10 @@ export default {
           DEFAULT: 'var(--expense)',
           soft: 'var(--expense-soft)',
         },
+        warn: {
+          DEFAULT: 'var(--warn)',
+          soft: 'var(--warn-soft)',
+        },
         tint: {
           green: 'var(--t-green)',
           emerald: 'var(--t-emerald)',

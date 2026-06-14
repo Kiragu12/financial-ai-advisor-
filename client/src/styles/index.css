@@ -40,6 +40,8 @@
   --income-soft: oklch(95% 0.035 158);
   --expense: oklch(60% 0.16 28);
   --expense-soft: oklch(96% 0.03 28);
+  --warn: oklch(50% 0.13 70);
+  --warn-soft: oklch(96% 0.04 70);
 
   /* category tints (consistent L/C, varied H) */
   --t-green: oklch(64% 0.13 150);
