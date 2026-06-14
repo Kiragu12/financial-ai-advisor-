@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Landing } from '../pages/Landing';
+import { NotReady } from '../pages/NotReady';
 import { Sandbox } from '../pages/Sandbox';
 
 const queryClient = new QueryClient({
@@ -20,6 +21,7 @@ export function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/sandbox" element={<Sandbox />} />
+          <Route path="*" element={<NotReady />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
