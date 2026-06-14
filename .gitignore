@@ -9,3 +9,6 @@ coverage/
 *.tsbuildinfo
 .DS_Store
 Thumbs.db
+
+# Claude Code project memory — kept local, never pushed to GitHub
+CLAUDE.md

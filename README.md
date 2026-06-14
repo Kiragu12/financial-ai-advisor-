@@ -2,6 +2,11 @@
 
 Akiba is a web-based personal finance tracker with an AI-powered financial advisor for university students.
 
+## Design
+
+The Claude Design for the frontend is here:
+<https://api.anthropic.com/v1/design/h/0n8ctC-sB8TEcB5P59oX8Q>
+
 ## Project Structure
 
 ```text

@@ -11,6 +11,7 @@ export default {
           600: '#16724b',
           700: '#125b3d',
         },
+        cream: '#faf9f5',
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
