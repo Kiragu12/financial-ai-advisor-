@@ -2,14 +2,360 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Design tokens — ported verbatim from the Akiba prototype.
+   Treat these CSS variables as the single source of truth for colours,
+   radii, shadows and the sidebar width. Tailwind utilities can reference
+   them via arbitrary values (e.g. `bg-[var(--surface)]`); component styles
+   below consume them directly.
+   ────────────────────────────────────────────────────────────────────── */
+
 :root {
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* fonts */
+  --font-body: 'Hanken Grotesk', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* warm, slightly green-tinted neutrals */
+  --bg: oklch(98.2% 0.006 150);
+  --surface: #ffffff;
+  --surface-2: oklch(97.4% 0.008 150);
+  --surface-3: oklch(95.6% 0.01 150);
+  --border: oklch(91.5% 0.009 150);
+  --border-strong: oklch(86% 0.012 150);
+
+  /* text */
+  --ink: oklch(26% 0.02 158);
+  --ink-2: oklch(48% 0.016 158);
+  --ink-3: oklch(63% 0.012 158);
+
+  /* brand + semantic */
+  --accent-h: 158;
+  --primary: oklch(56% 0.13 var(--accent-h));
+  --primary-press: oklch(50% 0.13 var(--accent-h));
+  --primary-soft: oklch(95% 0.035 var(--accent-h));
+  --primary-soft-2: oklch(91% 0.05 var(--accent-h));
+  --on-primary: #ffffff;
+
+  --income: oklch(56% 0.13 158);
+  --income-soft: oklch(95% 0.035 158);
+  --expense: oklch(60% 0.16 28);
+  --expense-soft: oklch(96% 0.03 28);
+
+  /* category tints (consistent L/C, varied H) */
+  --t-green: oklch(64% 0.13 150);
+  --t-emerald: oklch(62% 0.13 165);
+  --t-blue: oklch(64% 0.12 235);
+  --t-violet: oklch(60% 0.13 290);
+  --t-amber: oklch(72% 0.13 70);
+  --t-teal: oklch(66% 0.11 195);
+  --t-pink: oklch(66% 0.15 350);
+  --t-lime: oklch(72% 0.13 120);
+  --t-red: oklch(62% 0.16 25);
+
+  /* radii */
+  --r: 16px;
+  --r-sm: 11px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  /* shadows */
+  --shadow-sm: 0 1px 2px rgba(20, 44, 32, 0.05);
+  --shadow:
+    0 1px 2px rgba(20, 44, 32, 0.05),
+    0 10px 28px -16px rgba(20, 44, 32, 0.18);
+  --shadow-lg:
+    0 1px 2px rgba(20, 44, 32, 0.05),
+    0 24px 60px -28px rgba(20, 44, 32, 0.28);
+  --ring: 0 0 0 4px var(--primary-soft-2);
+
+  /* layout */
+  --sidebar-w: 248px;
+
   color-scheme: light;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html,
 body {
   margin: 0;
-  background-color: #faf9f5;
-  color: #0f172a;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+#root {
+  height: 100%;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--primary-soft-2);
+}
+
+/* tabular numerals everywhere money shows up */
+.num {
+  font-family: var(--font-display);
+  font-feature-settings: 'tnum' 1;
+  letter-spacing: -0.01em;
+}
+
+/* scrollbars */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 99px;
+  border: 3px solid var(--bg);
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* lucide icons baseline */
+[data-lucide] {
+  display: inline-block;
+  vertical-align: middle;
+}
+svg.lucide {
+  stroke-width: 1.9;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Design component classes — copied from the prototype.
+   Phase 2 primitives (Button, Input, Card, …) will wrap these so feature
+   code stays in JSX-land and never needs to type CSS-class strings.
+   ────────────────────────────────────────────────────────────────────── */
+
+/* cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-sm);
+}
+.card-pad {
+  padding: 20px;
+}
+
+/* generic helpers */
+.muted {
+  color: var(--ink-2);
+}
+.faint {
+  color: var(--ink-3);
+}
+.eyebrow {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* pills / chips */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--surface-2);
+  transition:
+    transform 0.12s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s;
+}
+.btn:hover {
+  background: var(--surface-3);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+}
+.btn-ghost:hover {
+  background: var(--surface-2);
+}
+.btn-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow:
+    0 1px 2px rgba(20, 44, 32, 0.12),
+    0 8px 18px -10px var(--primary);
+}
+.btn-primary:hover {
+  background: var(--primary-press);
+}
+.btn-sm {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+.btn-icon {
+  padding: 9px;
+  border-radius: var(--r-sm);
+}
+
+/* inputs */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-sm);
+  padding: 11px 13px;
+  font-size: 14.5px;
+  color: var(--ink);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.input::placeholder {
+  color: var(--ink-3);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--ring);
+}
+
+/* category tints */
+.tint-green {
+  --c: var(--t-green);
+}
+.tint-emerald {
+  --c: var(--t-emerald);
+}
+.tint-blue {
+  --c: var(--t-blue);
+}
+.tint-violet {
+  --c: var(--t-violet);
+}
+.tint-amber {
+  --c: var(--t-amber);
+}
+.tint-teal {
+  --c: var(--t-teal);
+}
+.tint-pink {
+  --c: var(--t-pink);
+}
+.tint-lime {
+  --c: var(--t-lime);
+}
+.tint-red {
+  --c: var(--t-red);
+}
+.tint-primary {
+  --c: var(--primary);
+}
+.ic {
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--c) 15%, white);
+  color: var(--c);
+}
+
+/* progress */
+.bar {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--c, var(--primary));
+  transition: width 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--c, var(--primary));
+}
+
+/* motion */
+@keyframes rise {
+  from {
+    transform: translateY(10px);
+  }
+  to {
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.42s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.stagger > * {
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .stagger > * {
+    animation: none;
+  }
 }

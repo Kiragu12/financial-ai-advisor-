@@ -12,3 +12,6 @@ Thumbs.db
 
 # Claude Code project memory — kept local, never pushed to GitHub
 CLAUDE.md
+
+# Throwaway prototype extraction output (see scripts/extract-prototype.cjs)
+tmp/
