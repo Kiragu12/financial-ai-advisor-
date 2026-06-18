@@ -1,4 +1,5 @@
 import { LogOut, Menu, Settings, User } from 'lucide-react';
+import { useAuth } from '../../features/auth/useAuth';
 import { Avatar } from '../ui/avatar';
 import { Button } from '../ui/button';
 import {
@@ -15,6 +16,7 @@ interface TopbarProps {
 }
 
 export function Topbar({ onOpenSidebar }: TopbarProps) {
+  const { signOut } = useAuth();
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-line bg-bg/85 px-4 backdrop-blur sm:px-6">
       <Button
@@ -56,7 +58,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
             <Settings size={16} /> Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem disabled>
+          <DropdownMenuItem onSelect={() => signOut()}>
             <LogOut size={16} /> Log out
           </DropdownMenuItem>
         </DropdownMenuContent>
