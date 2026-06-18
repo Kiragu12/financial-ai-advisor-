@@ -203,3 +203,12 @@ Use this checklist before starting non-trivial tasks in this repository.
   - `client/.env.example` documents `VITE_API_BASE_URL` with the local and Railway values.
   - `docs/deployment.md` records the production shape: Vercel for the frontend, Railway for the backend and PostgreSQL, env vars each piece reads, and a pre-deploy checklist.
   - README updated with an Environment Variables section and a pointer to the deployment doc.
+- Phase 4–8 FE — full UI skeletons (every protected screen, no fake data):
+  - `components/finance/` primitives: `EmptyState`, `BackendNotReady`, `StatCard`, `WalletCard`, `TransactionRow`, `GoalCard`, `MoneyInput` (string-typed, decimal-only, KES prefix — never coerced to Number).
+  - `pages/Dashboard.tsx`: KPI strip (aggregate balance, income, spending), recent activity, spending categories, goals progress and advisor teaser sections — each rendering its empty state until the dashboard summary endpoint ships.
+  - `pages/Wallets.tsx` + `features/wallets/AddWalletDialog.tsx`: wallets grid empty state, aggregate balance / active wallets / updated stat strip, Add Wallet modal with name + type + opening-balance fields and honest backend-not-ready alert on submit.
+  - `pages/Transactions.tsx` + `features/transactions/AddTransactionDialog.tsx` + `features/transfers/TransferDialog.tsx`: search + wallet/range filters, monthly income/spending stat cards, Add Transaction modal (income/expense toggle, MoneyInput, wallet/category pickers disabled until those endpoints exist, date, note), Transfer modal (from/to pickers disabled, MoneyInput, note). Submit on each surfaces the matching POST endpoint as not-ready.
+  - `pages/Goals.tsx` + `features/goals/AddGoalDialog.tsx`: total-saved / active / completed stat strip, empty grid, Add Goal modal (name, MoneyInput target, deadline, optional initial contribution).
+  - `pages/Advisor.tsx`: chat shell (Card with header, scrolling body, textarea + Send button), empty conversation state, proactive-insights rail empty state, and a top-of-page "educational, not regulated financial advice" disclaimer. Send surfaces the advisor endpoint as not-ready.
+  - Tests added for Dashboard, Advisor, AddWalletDialog, AddTransactionDialog and AddGoalDialog (validation + backend-not-ready paths). 11/11 passing. Lint and build green.
+  - Important: every data slot is an empty/error state, every submit is an honest "backend not ready" alert. Zero hardcoded balances, transactions, goals or chat messages. When Paul ships an endpoint, each section becomes a one-line query/mutation wire-up.
