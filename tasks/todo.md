@@ -71,7 +71,7 @@ Use this checklist before starting non-trivial tasks in this repository.
 - [x] Decide the frontend architecture: pages, layouts, feature folders, API client, form handling, shared UI components, and route protection.
 - [x] Draft the initial class diagram.
 - [x] Review uploaded Akiba sample frontend direction.
-- [ ] Define environment variables, deployment shape, and local development setup.
+- [x] Define environment variables, deployment shape, and local development setup.
 - [ ] Review proposed wallet balance strategy before implementation.
 - [ ] Review and refine UML diagrams before implementation.
 
@@ -80,7 +80,7 @@ Use this checklist before starting non-trivial tasks in this repository.
 - [x] Create the React frontend with Tailwind CSS.
 - [x] Create the Express backend.
 - [x] Add linting, formatting, and consistent scripts.
-- [ ] Add basic tests.
+- [x] Add basic tests.
 - [ ] Add database migration tooling.
 - [x] Add README setup instructions.
 - [x] Add backend health endpoint and frontend health check.
@@ -91,7 +91,7 @@ Use this checklist before starting non-trivial tasks in this repository.
 - [ ] Implement login and logout.
 - [ ] Hash passwords securely.
 - [ ] Protect backend routes with auth middleware.
-- [ ] Protect frontend routes with auth state.
+- [x] Protect frontend routes with auth state.
 - [ ] Verify auth with automated tests and manual browser checks.
 
 ### Phase 3: Wallet Management
@@ -187,3 +187,19 @@ Use this checklist before starting non-trivial tasks in this repository.
   - Stub pages for `/dashboard`, `/wallets`, `/transactions`, `/goals`, `/advisor`, each rendering the real PageHeader plus an honest "waiting on the backend" Alert (no fake data).
   - Routes nested under AppShell in `app/App.tsx`; Landing, Sandbox and NotReady kept outside.
   - `npm run lint` and `npm run build` green; dev server already serving 200 on every new route.
+- Phase 2 FE — auth context + protected routes (frontend half of the auth slice):
+  - `features/auth/AuthContext.tsx` provides `token`, `isAuthenticated`, `signIn(token)`, `signOut()`, backed by `localStorage` under `akiba.auth.token`. Honest about Paul's API: no user payload invented, no fake login flow.
+  - `features/auth/useAuth.ts` exposes the typed hook (split out so React Fast Refresh stays clean).
+  - `features/auth/ProtectedRoute.tsx` redirects unauthenticated visitors to `/login` and preserves the originating path in router state.
+  - `app/App.tsx` wraps the AppShell-nested routes in `ProtectedRoute` and the whole tree in `AuthProvider`. `/dashboard`, `/wallets`, `/transactions`, `/goals`, `/advisor` are gated.
+  - `Topbar.tsx`'s "Log out" item now calls `signOut()` (local-only — clears the stored token, the ProtectedRoute bounces back to `/login`).
+  - Login form unchanged: still surfaces the honest "backend not ready" alert. When Paul ships `POST /api/auth/login`, wiring is one call to `signIn(response.token)` away.
+- Phase 1 — frontend test tooling:
+  - Vitest + jsdom + `@testing-library/react` + `@testing-library/jest-dom` + `@testing-library/user-event` installed.
+  - `vite.config.ts` extended with a Vitest `test` config; `src/test/setup.ts` wires jest-dom matchers and per-test cleanup.
+  - `npm test` and `npm run test:watch` scripts added.
+  - Smoke tests cover Landing (hero + CTAs), Login (honest backend-not-ready alert, register link) and ProtectedRoute (redirect-when-unauthenticated, render-when-authenticated). 5/5 passing.
+- Phase 0 — environment + deployment shape:
+  - `client/.env.example` documents `VITE_API_BASE_URL` with the local and Railway values.
+  - `docs/deployment.md` records the production shape: Vercel for the frontend, Railway for the backend and PostgreSQL, env vars each piece reads, and a pre-deploy checklist.
+  - README updated with an Environment Variables section and a pointer to the deployment doc.

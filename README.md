@@ -51,3 +51,15 @@ GET /api/health
 ```
 
 The frontend calls this endpoint from the app shell to prove the client and server can communicate.
+
+## Environment Variables
+
+Copy `client/.env.example` to `client/.env.local` and adjust if needed. The
+only variable the frontend reads is `VITE_API_BASE_URL` — see the comments
+in that file for the values used in each environment.
+
+## Deployment
+
+See [`docs/deployment.md`](docs/deployment.md) for the production shape
+(Vercel for the frontend, Railway for the backend and PostgreSQL), the
+env vars each piece reads, and the pre-deploy checklist.
