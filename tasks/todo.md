@@ -176,3 +176,14 @@ Use this checklist before starting non-trivial tasks in this repository.
   - `GET /api/health` backend endpoint
   - frontend health-status check against the API
   - local frontend port set to `http://127.0.0.1:5274` to avoid existing Vite port conflicts
+- Phase 3.5 — Auth UI shells (unwired, honest about backend gap):
+  - `components/layout/AuthShell.tsx` — centred-card shell with brand mark, no sidebar.
+  - `pages/Login.tsx` and `pages/Register.tsx` — real forms built on existing primitives, HTML5 validation, mutual links between the two.
+  - On submit, an info Alert explains the relevant `POST /api/auth/*` endpoint isn't live yet. No faked session.
+  - Routes wired at `/login` and `/register`; Landing CTAs now reach real screens. `npm run lint` and `npm run build` green.
+- Phase 3 — App shell + routes:
+  - `components/layout/AppShell.tsx` with a desktop sidebar, sticky topbar, and mobile slide-over.
+  - `components/layout/Sidebar.tsx`, `Topbar.tsx`, `PageHeader.tsx` built on existing UI primitives.
+  - Stub pages for `/dashboard`, `/wallets`, `/transactions`, `/goals`, `/advisor`, each rendering the real PageHeader plus an honest "waiting on the backend" Alert (no fake data).
+  - Routes nested under AppShell in `app/App.tsx`; Landing, Sandbox and NotReady kept outside.
+  - `npm run lint` and `npm run build` green; dev server already serving 200 on every new route.
