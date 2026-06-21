@@ -1,5 +1,7 @@
 import { Plus } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { useCreateWallet } from '../../api/hooks/use-wallets';
+import type { WalletType } from '../../api/types';
 import { MoneyInput } from '../../components/finance/MoneyInput';
 import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
@@ -14,12 +16,13 @@ import { ErrorText, Field, HelperText } from '../../components/ui/field';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 
-const WALLET_TYPES = [
-  { value: 'mpesa', label: 'M-Pesa' },
+// Values match the backend wallet type enum.
+const WALLET_TYPES: { value: WalletType; label: string }[] = [
+  { value: 'mobile_money', label: 'M-Pesa / Mobile money' },
   { value: 'bank', label: 'Bank account' },
   { value: 'cash', label: 'Cash' },
   { value: 'savings', label: 'Savings' },
-] as const;
+];
 
 interface AddWalletDialogProps {
   trigger?: ReactNode;
@@ -27,18 +30,19 @@ interface AddWalletDialogProps {
 
 export function AddWalletDialog({ trigger }: AddWalletDialogProps) {
   const [open, setOpen] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [name, setName] = useState('');
-  const [type, setType] = useState<(typeof WALLET_TYPES)[number]['value']>('mpesa');
+  const [type, setType] = useState<WalletType>('mobile_money');
   const [openingBalance, setOpeningBalance] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
 
+  const createWallet = useCreateWallet();
+
   function reset() {
     setName('');
-    setType('mpesa');
+    setType('mobile_money');
     setOpeningBalance('');
     setNameError(null);
-    setSubmitted(false);
+    createWallet.reset();
   }
 
   function handleOpenChange(next: boolean) {
@@ -53,7 +57,14 @@ export function AddWalletDialog({ trigger }: AddWalletDialogProps) {
       return;
     }
     setNameError(null);
-    setSubmitted(true);
+    createWallet.mutate(
+      {
+        name: name.trim(),
+        type,
+        openingBalance: openingBalance.trim() === '' ? 0 : Number(openingBalance),
+      },
+      { onSuccess: () => handleOpenChange(false) },
+    );
   }
 
   return (
@@ -94,7 +105,7 @@ export function AddWalletDialog({ trigger }: AddWalletDialogProps) {
             <select
               id="wallet-type"
               value={type}
-              onChange={(event) => setType(event.target.value as typeof type)}
+              onChange={(event) => setType(event.target.value as WalletType)}
               className="input"
             >
               {WALLET_TYPES.map((option) => (
@@ -115,10 +126,11 @@ export function AddWalletDialog({ trigger }: AddWalletDialogProps) {
             <HelperText>Leave blank for 0.00 — you can log transactions to update it.</HelperText>
           </Field>
 
-          {submitted ? (
-            <Alert variant="info" title="Backend not ready">
-              The wallet endpoint goes live once Paul ships{' '}
-              <code className="font-mono">POST /api/wallets</code>. Form is wired and waiting.
+          {createWallet.isError ? (
+            <Alert variant="error" title="Could not create wallet">
+              {createWallet.error instanceof Error
+                ? createWallet.error.message
+                : 'Please try again.'}
             </Alert>
           ) : null}
 
@@ -126,7 +138,7 @@ export function AddWalletDialog({ trigger }: AddWalletDialogProps) {
             <Button variant="ghost" type="button" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit">
+            <Button variant="primary" type="submit" loading={createWallet.isPending}>
               Create wallet
             </Button>
           </DialogFooter>

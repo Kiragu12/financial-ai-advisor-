@@ -1,20 +1,72 @@
-import { Brain, Info, Send, Sparkles } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { Brain, MessageSquarePlus, Send, Sparkles } from 'lucide-react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import {
+  useConversation,
+  useConversations,
+  useCreateConversation,
+  useSendMessage,
+} from '../api/hooks/use-advisor';
 import { EmptyState } from '../components/finance/EmptyState';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Alert } from '../components/ui/alert';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
+import { Spinner } from '../components/ui/spinner';
+import { cn } from '../lib/cn';
 
 export function Advisor() {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const conversations = useConversations();
+  const conversation = useConversation(selectedId);
+  const createConversation = useCreateConversation();
+  const sendMessage = useSendMessage();
+
+  // Auto-select the most recent conversation once the list loads.
+  useEffect(() => {
+    const first = conversations.data?.[0];
+    if (selectedId === null && first) {
+      setSelectedId(first.id);
+    }
+  }, [selectedId, conversations.data]);
+
+  // Keep the latest message in view.
+  const messageCount = conversation.data?.messages.length ?? 0;
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+  }, [messageCount, sendMessage.isPending]);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (draft.trim() === '') return;
-    setSubmitted(true);
+    const content = draft.trim();
+    if (content === '' || sendMessage.isPending) return;
+    setError(null);
+    setDraft('');
+    try {
+      let id = selectedId;
+      if (!id) {
+        const { conversation: created } = await createConversation.mutateAsync({});
+        id = created.id;
+        setSelectedId(id);
+      }
+      await sendMessage.mutateAsync({ conversationId: id, content });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not send your message.');
+      setDraft(content); // restore so the user doesn't lose what they typed
+    }
   }
+
+  function startNewChat() {
+    setSelectedId(null);
+    setDraft('');
+    setError(null);
+  }
+
+  const messages = conversation.data?.messages ?? [];
+  const showThread = selectedId !== null && messages.length > 0;
 
   return (
     <div className="space-y-6">
@@ -22,6 +74,11 @@ export function Advisor() {
         eyebrow="AI"
         title="Advisor"
         description="Friendly, judgement-free nudges. Ask about your budget, your goals or last month's spending."
+        actions={
+          <Button variant="ghost" leftIcon={<MessageSquarePlus size={16} />} onClick={startNewChat}>
+            New chat
+          </Button>
+        }
       />
 
       <Alert variant="info" title="Educational, not regulated financial advice">
@@ -29,81 +86,95 @@ export function Advisor() {
         It is not a licensed financial adviser and does not replace one.
       </Alert>
 
-      <section className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-        <Card padded={false} className="flex h-[60vh] min-h-[420px] flex-col">
-          <header className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
-            <div className="flex items-center gap-3">
-              <span className="ic tint-violet h-9 w-9">
-                <Brain size={16} aria-hidden="true" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-ink">Akiba advisor</p>
-                <p className="text-xs text-ink-3">Powered by Paul's backend, not the browser.</p>
+      <Card padded={false} className="flex h-[62vh] min-h-[440px] flex-col">
+        <header className="flex items-center gap-3 border-b border-line px-5 py-4">
+          <span className="ic tint-violet h-9 w-9">
+            <Brain size={16} aria-hidden="true" />
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-ink">Akiba advisor</p>
+            <p className="text-xs text-ink-3">Grounded in your real wallets, transactions and goals.</p>
+          </div>
+        </header>
+
+        <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-5">
+          {conversation.isLoading && selectedId ? (
+            <div className="grid place-items-center py-10">
+              <Spinner size={22} label="Loading conversation" />
+            </div>
+          ) : showThread ? (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className={cn('flex', message.role === 'user' ? 'justify-end' : 'justify-start')}
+              >
+                <div
+                  className={cn(
+                    'max-w-[80%] whitespace-pre-wrap rounded-card-sm px-4 py-2.5 text-sm leading-6',
+                    message.role === 'user'
+                      ? 'bg-primary text-white'
+                      : 'border border-line bg-surface text-ink',
+                  )}
+                >
+                  {message.content}
+                </div>
+              </div>
+            ))
+          ) : (
+            <EmptyState
+              icon={Sparkles}
+              title="Start a conversation"
+              description="Ask things like “Where am I overspending?” or “How am I tracking towards my laptop goal?”"
+            />
+          )}
+
+          {sendMessage.isPending ? (
+            <div className="flex justify-start">
+              <div className="flex items-center gap-2 rounded-card-sm border border-line bg-surface px-4 py-2.5 text-sm text-ink-3">
+                <Spinner size={14} label="Akiba is thinking" /> Akiba is thinking…
               </div>
             </div>
-          </header>
+          ) : null}
 
-          <div className="flex-1 overflow-y-auto p-5">
-            {submitted ? (
-              <Alert variant="warn" title="Backend not ready">
-                The advisor endpoint goes live once Paul ships{' '}
-                <code className="font-mono">POST /api/advisor/messages</code>. Your draft is kept
-                in the input below.
-              </Alert>
-            ) : (
-              <EmptyState
-                icon={Sparkles}
-                title="Start a conversation"
-                description="Ask things like &ldquo;Where am I overspending?&rdquo; or &ldquo;How am I tracking towards my laptop goal?&rdquo;"
-              />
-            )}
-          </div>
+          {error ? (
+            <Alert variant="error" title="Message failed">
+              {error}
+            </Alert>
+          ) : null}
+        </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="flex items-end gap-2 border-t border-line bg-surface p-3"
+        <form
+          onSubmit={handleSubmit}
+          className="flex items-end gap-2 border-t border-line bg-surface p-3"
+        >
+          <label htmlFor="advisor-draft" className="sr-only">
+            Ask the advisor
+          </label>
+          <textarea
+            id="advisor-draft"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                event.currentTarget.form?.requestSubmit();
+              }
+            }}
+            placeholder="Ask Akiba something…"
+            rows={2}
+            className="min-h-[44px] flex-1 resize-none rounded-card-sm border border-line bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-3 focus:shadow-ring"
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            leftIcon={<Send size={14} />}
+            loading={sendMessage.isPending || createConversation.isPending}
+            disabled={draft.trim() === ''}
           >
-            <label htmlFor="advisor-draft" className="sr-only">
-              Ask the advisor
-            </label>
-            <textarea
-              id="advisor-draft"
-              value={draft}
-              onChange={(event) => {
-                setDraft(event.target.value);
-                if (submitted) setSubmitted(false);
-              }}
-              placeholder="Ask Akiba something…"
-              rows={2}
-              className="min-h-[44px] flex-1 resize-none rounded-card-sm border border-line bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-3 focus:shadow-ring"
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              leftIcon={<Send size={14} />}
-              disabled={draft.trim() === ''}
-            >
-              Send
-            </Button>
-          </form>
-        </Card>
-
-        <aside className="space-y-4">
-          <Card>
-            <div className="mb-3 flex items-center gap-2">
-              <span className="ic tint-amber h-8 w-8">
-                <Sparkles size={14} aria-hidden="true" />
-              </span>
-              <h2 className="text-sm font-semibold text-ink">Proactive insights</h2>
-            </div>
-            <EmptyState
-              icon={Info}
-              title="No insights yet"
-              description="As soon as the advisor endpoint exists, Akiba will surface a handful of weekly nudges based on your recent spending and goals."
-            />
-          </Card>
-        </aside>
-      </section>
+            Send
+          </Button>
+        </form>
+      </Card>
     </div>
   );
 }

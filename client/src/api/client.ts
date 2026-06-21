@@ -26,6 +26,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const { body, headers, ...rest } = options;
   const init: RequestInit = {
     ...rest,
+    // Send and receive the httpOnly auth cookie on every request. Required for
+    // the cookie-based auth the backend uses; without it the browser drops the
+    // akiba_token cookie on cross-origin calls and every protected route 401s.
+    credentials: 'include',
     headers: {
       Accept: 'application/json',
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),

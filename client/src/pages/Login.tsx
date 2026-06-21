@@ -1,5 +1,7 @@
-import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { type FormEvent } from 'react';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useLogin } from '../api/hooks/use-auth';
+import { useAuth } from '../features/auth/useAuth';
 import { AuthShell } from '../components/layout/AuthShell';
 import { Alert } from '../components/ui/alert';
 import { Button } from '../components/ui/button';
@@ -8,11 +10,29 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 
 export function Login() {
-  const [submitted, setSubmitted] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, isLoading } = useAuth();
+  const login = useLogin();
+
+  // Where to land after login: the page they were bounced from, else dashboard.
+  const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
+
+  // Already signed in (e.g. navigated here manually) — skip the form.
+  if (!isLoading && isAuthenticated) {
+    return <Navigate to={from} replace />;
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitted(true);
+    const form = new FormData(event.currentTarget);
+    login.mutate(
+      {
+        email: String(form.get('email') ?? ''),
+        password: String(form.get('password') ?? ''),
+      },
+      { onSuccess: () => navigate(from, { replace: true }) },
+    );
   }
 
   return (
@@ -29,7 +49,7 @@ export function Login() {
         </>
       }
     >
-      <form onSubmit={handleSubmit} noValidate={false} className="grid gap-5">
+      <form onSubmit={handleSubmit} className="grid gap-5">
         <Field>
           <Label htmlFor="login-email">Email</Label>
           <Input
@@ -56,14 +76,18 @@ export function Login() {
           <HelperText>At least 8 characters.</HelperText>
         </Field>
 
-        <Button variant="primary" type="submit" className="w-full justify-center">
+        <Button
+          variant="primary"
+          type="submit"
+          className="w-full justify-center"
+          loading={login.isPending}
+        >
           Log in
         </Button>
 
-        {submitted ? (
-          <Alert variant="info" title="Backend not ready">
-            The login endpoint goes live once Paul ships{' '}
-            <code className="font-mono">POST /api/auth/login</code>. Form is wired and waiting.
+        {login.isError ? (
+          <Alert variant="error" title="Could not log in">
+            {login.error instanceof Error ? login.error.message : 'Please try again.'}
           </Alert>
         ) : null}
       </form>

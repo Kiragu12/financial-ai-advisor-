@@ -1,18 +1,69 @@
 import { ArrowDownLeft, ArrowUpRight, Receipt, Search } from 'lucide-react';
-import { useState } from 'react';
-import { PageHeader } from '../components/layout/PageHeader';
-import { BackendNotReady } from '../components/finance/BackendNotReady';
+import { useMemo, useState } from 'react';
+import { useCategories } from '../api/hooks/use-categories';
+import { useDashboardSummary } from '../api/hooks/use-dashboard';
+import { useTransactions } from '../api/hooks/use-transactions';
+import { useWallets } from '../api/hooks/use-wallets';
+import type { TransactionType } from '../api/types';
 import { EmptyState } from '../components/finance/EmptyState';
 import { StatCard } from '../components/finance/StatCard';
+import { TransactionRow } from '../components/finance/TransactionRow';
+import { PageHeader } from '../components/layout/PageHeader';
+import { Alert } from '../components/ui/alert';
 import { Card } from '../components/ui/card';
 import { Field } from '../components/ui/field';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { Spinner } from '../components/ui/spinner';
+import { formatMoney } from '../lib/money';
 import { AddTransactionDialog } from '../features/transactions/AddTransactionDialog';
 import { TransferDialog } from '../features/transfers/TransferDialog';
 
+const TYPE_LABEL: Record<TransactionType, string> = {
+  income: 'Income',
+  expense: 'Expense',
+  transfer_in: 'Transfer in',
+  transfer_out: 'Transfer out',
+};
+
+function directionOf(type: TransactionType): 'income' | 'expense' {
+  return type === 'income' || type === 'transfer_in' ? 'income' : 'expense';
+}
+
 export function Transactions() {
   const [query, setQuery] = useState('');
+  const [walletFilter, setWalletFilter] = useState('all');
+
+  const transactions = useTransactions({ limit: 100 });
+  const wallets = useWallets();
+  const categories = useCategories();
+  const summary = useDashboardSummary();
+
+  const walletName = useMemo(
+    () => new Map((wallets.data ?? []).map((w) => [w.id, w.name])),
+    [wallets.data],
+  );
+  const categoryName = useMemo(
+    () => new Map((categories.data ?? []).map((c) => [c.id, c.name])),
+    [categories.data],
+  );
+
+  const filtered = useMemo(() => {
+    const rows = transactions.data ?? [];
+    const q = query.trim().toLowerCase();
+    return rows.filter((t) => {
+      if (walletFilter !== 'all' && t.walletId !== walletFilter) return false;
+      if (q === '') return true;
+      const haystack = [
+        t.description ?? '',
+        t.categoryId ? categoryName.get(t.categoryId) ?? '' : '',
+        TYPE_LABEL[t.type],
+      ]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [transactions.data, query, walletFilter, categoryName]);
 
   return (
     <div className="space-y-6">
@@ -28,18 +79,25 @@ export function Transactions() {
         }
       />
 
-      <BackendNotReady endpoint="GET /api/transactions">
-        Filters and the search box are wired locally — once Paul ships the endpoint, the same
-        controls will narrow real results.
-      </BackendNotReady>
-
       <section className="grid gap-4 sm:grid-cols-2">
-        <StatCard label="Income this month" icon={ArrowDownLeft} tint="emerald" />
-        <StatCard label="Spending this month" icon={ArrowUpRight} tint="amber" />
+        <StatCard
+          label="Income this month"
+          icon={ArrowDownLeft}
+          tint="emerald"
+          loading={summary.isLoading}
+          value={summary.data ? formatMoney(summary.data.income.month) : undefined}
+        />
+        <StatCard
+          label="Spending this month"
+          icon={ArrowUpRight}
+          tint="amber"
+          loading={summary.isLoading}
+          value={summary.data ? formatMoney(summary.data.expense.month) : undefined}
+        />
       </section>
 
       <Card className="space-y-5">
-        <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+        <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
           <Field>
             <Label htmlFor="tx-search">Search</Label>
             <div className="relative">
@@ -60,32 +118,56 @@ export function Transactions() {
 
           <Field>
             <Label htmlFor="tx-filter-wallet">Wallet</Label>
-            <select id="tx-filter-wallet" className="input" disabled>
-              <option>All wallets</option>
-            </select>
-          </Field>
-
-          <Field>
-            <Label htmlFor="tx-filter-range">Range</Label>
-            <select id="tx-filter-range" className="input" defaultValue="month">
-              <option value="month">This month</option>
-              <option value="last-month">Last month</option>
-              <option value="quarter">Last 90 days</option>
-              <option value="all">All time</option>
+            <select
+              id="tx-filter-wallet"
+              className="input"
+              value={walletFilter}
+              onChange={(event) => setWalletFilter(event.target.value)}
+            >
+              <option value="all">All wallets</option>
+              {(wallets.data ?? []).map((wallet) => (
+                <option key={wallet.id} value={wallet.id}>
+                  {wallet.name}
+                </option>
+              ))}
             </select>
           </Field>
         </div>
 
-        <EmptyState
-          icon={Receipt}
-          title={query.trim() ? `No matches for "${query.trim()}"` : 'No transactions yet'}
-          description={
-            query.trim()
-              ? 'Search runs against the real transaction list once the endpoint is live.'
-              : 'Logged income and expenses will appear here as soon as the transactions endpoint exists.'
-          }
-          action={<AddTransactionDialog />}
-        />
+        {transactions.isError ? (
+          <Alert variant="error" title="Couldn't load transactions">
+            {transactions.error instanceof Error ? transactions.error.message : 'Please try again.'}
+          </Alert>
+        ) : transactions.isLoading ? (
+          <div className="grid place-items-center py-12">
+            <Spinner size={24} label="Loading transactions" />
+          </div>
+        ) : filtered.length > 0 ? (
+          <div className="space-y-2">
+            {filtered.map((t) => (
+              <TransactionRow
+                key={t.id}
+                date={t.transactionDate}
+                description={t.description || TYPE_LABEL[t.type]}
+                wallet={walletName.get(t.walletId)}
+                category={t.categoryId ? categoryName.get(t.categoryId) : undefined}
+                amount={t.amount}
+                direction={directionOf(t.type)}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={Receipt}
+            title={query.trim() ? `No matches for "${query.trim()}"` : 'No transactions yet'}
+            description={
+              query.trim()
+                ? 'Try a different search or clear the filters.'
+                : 'Logged income and expenses will appear here. Add your first one to get started.'
+            }
+            action={<AddTransactionDialog />}
+          />
+        )}
       </Card>
     </div>
   );

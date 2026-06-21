@@ -1,5 +1,7 @@
 import { ArrowLeftRight } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { useCreateTransfer } from '../../api/hooks/use-transfers';
+import { useWallets } from '../../api/hooks/use-wallets';
 import { MoneyInput } from '../../components/finance/MoneyInput';
 import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
@@ -20,16 +22,27 @@ interface TransferDialogProps {
 
 export function TransferDialog({ trigger }: TransferDialogProps) {
   const [open, setOpen] = useState(false);
+  const [fromId, setFromId] = useState('');
+  const [toId, setToId] = useState('');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [amountError, setAmountError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const { data: wallets = [] } = useWallets();
+  const createTransfer = useCreateTransfer();
+
+  // Default source/destination to the first two distinct wallets.
+  const effectiveFrom = fromId || wallets[0]?.id || '';
+  const effectiveTo = toId || wallets.find((w) => w.id !== effectiveFrom)?.id || '';
+  const tooFewWallets = wallets.length < 2;
 
   function reset() {
+    setFromId('');
+    setToId('');
     setAmount('');
     setNote('');
-    setSubmitted(false);
-    setAmountError(null);
+    setError(null);
+    createTransfer.reset();
   }
 
   function handleOpenChange(next: boolean) {
@@ -40,11 +53,23 @@ export function TransferDialog({ trigger }: TransferDialogProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (amount.trim() === '' || Number(amount) <= 0) {
-      setAmountError('Enter an amount greater than zero.');
+      setError('Enter an amount greater than zero.');
       return;
     }
-    setAmountError(null);
-    setSubmitted(true);
+    if (effectiveFrom === effectiveTo) {
+      setError('Source and destination wallets must be different.');
+      return;
+    }
+    setError(null);
+    createTransfer.mutate(
+      {
+        fromWalletId: effectiveFrom,
+        toWalletId: effectiveTo,
+        amount: Number(amount),
+        description: note.trim() || undefined,
+      },
+      { onSuccess: () => handleOpenChange(false) },
+    );
   }
 
   return (
@@ -60,22 +85,44 @@ export function TransferDialog({ trigger }: TransferDialogProps) {
         <DialogHeader
           eyebrow="Move money"
           title="Transfer between wallets"
-          description="Atomic paired movement — the backend enforces sufficient funds when this endpoint ships."
+          description="The backend moves both balances atomically and rejects a transfer that exceeds the source balance."
         />
         <form onSubmit={handleSubmit} noValidate className="grid gap-5">
           <Field>
             <Label htmlFor="transfer-from">From</Label>
-            <select id="transfer-from" className="input" disabled>
-              <option>No wallets available yet</option>
+            <select
+              id="transfer-from"
+              className="input"
+              value={effectiveFrom}
+              onChange={(event) => setFromId(event.target.value)}
+              disabled={tooFewWallets}
+            >
+              {wallets.map((wallet) => (
+                <option key={wallet.id} value={wallet.id}>
+                  {wallet.name}
+                </option>
+              ))}
             </select>
           </Field>
 
           <Field>
             <Label htmlFor="transfer-to">To</Label>
-            <select id="transfer-to" className="input" disabled>
-              <option>No wallets available yet</option>
+            <select
+              id="transfer-to"
+              className="input"
+              value={effectiveTo}
+              onChange={(event) => setToId(event.target.value)}
+              disabled={tooFewWallets}
+            >
+              {wallets.map((wallet) => (
+                <option key={wallet.id} value={wallet.id}>
+                  {wallet.name}
+                </option>
+              ))}
             </select>
-            <HelperText>Both pickers fill in once GET /api/wallets ships.</HelperText>
+            {tooFewWallets ? (
+              <HelperText>You need at least two wallets to make a transfer.</HelperText>
+            ) : null}
           </Field>
 
           <Field>
@@ -84,13 +131,13 @@ export function TransferDialog({ trigger }: TransferDialogProps) {
               id="transfer-amount"
               required
               value={amount}
-              invalid={amountError !== null}
+              invalid={error !== null}
               onChange={(event) => {
                 setAmount(event.target.value);
-                if (amountError) setAmountError(null);
+                if (error) setError(null);
               }}
             />
-            {amountError ? <ErrorText>{amountError}</ErrorText> : null}
+            {error ? <ErrorText>{error}</ErrorText> : null}
           </Field>
 
           <Field>
@@ -104,10 +151,11 @@ export function TransferDialog({ trigger }: TransferDialogProps) {
             />
           </Field>
 
-          {submitted ? (
-            <Alert variant="info" title="Backend not ready">
-              The transfer endpoint goes live once Paul ships{' '}
-              <code className="font-mono">POST /api/transfers</code>.
+          {createTransfer.isError ? (
+            <Alert variant="error" title="Could not transfer">
+              {createTransfer.error instanceof Error
+                ? createTransfer.error.message
+                : 'Please try again.'}
             </Alert>
           ) : null}
 
@@ -115,7 +163,12 @@ export function TransferDialog({ trigger }: TransferDialogProps) {
             <Button variant="ghost" type="button" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit">
+            <Button
+              variant="primary"
+              type="submit"
+              loading={createTransfer.isPending}
+              disabled={tooFewWallets}
+            >
               Transfer
             </Button>
           </DialogFooter>

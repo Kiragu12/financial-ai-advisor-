@@ -1,34 +1,81 @@
-import { ArrowDownLeft, ArrowUpRight, Brain, Plus, Receipt, Sparkles, Target, Wallet } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Brain, Receipt, Sparkles, Target, Wallet } from 'lucide-react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { PageHeader } from '../components/layout/PageHeader';
-import { BackendNotReady } from '../components/finance/BackendNotReady';
+import { useCategories } from '../api/hooks/use-categories';
+import { useDashboardSummary, useSpendingByCategory } from '../api/hooks/use-dashboard';
+import { useGoals } from '../api/hooks/use-goals';
+import { useTransactions } from '../api/hooks/use-transactions';
+import { useWallets } from '../api/hooks/use-wallets';
+import type { TransactionType } from '../api/types';
 import { EmptyState } from '../components/finance/EmptyState';
 import { StatCard } from '../components/finance/StatCard';
+import { TransactionRow } from '../components/finance/TransactionRow';
+import { PageHeader } from '../components/layout/PageHeader';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
+import { Spinner } from '../components/ui/spinner';
+import { formatMoney } from '../lib/money';
+import { AddTransactionDialog } from '../features/transactions/AddTransactionDialog';
+
+const TYPE_LABEL: Record<TransactionType, string> = {
+  income: 'Income',
+  expense: 'Expense',
+  transfer_in: 'Transfer in',
+  transfer_out: 'Transfer out',
+};
+
+function directionOf(type: TransactionType): 'income' | 'expense' {
+  return type === 'income' || type === 'transfer_in' ? 'income' : 'expense';
+}
 
 export function Dashboard() {
+  const summary = useDashboardSummary();
+  const recent = useTransactions({ limit: 5 });
+  const spending = useSpendingByCategory();
+  const goals = useGoals('active');
+  const wallets = useWallets();
+  const categories = useCategories();
+
+  const walletName = useMemo(
+    () => new Map((wallets.data ?? []).map((w) => [w.id, w.name])),
+    [wallets.data],
+  );
+  const categoryName = useMemo(
+    () => new Map((categories.data ?? []).map((c) => [c.id, c.name])),
+    [categories.data],
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Overview"
         title="Dashboard"
         description="Your aggregate balance, recent activity and goal progress at a glance."
-        actions={
-          <Button variant="primary" leftIcon={<Plus size={16} />} disabled>
-            Add transaction
-          </Button>
-        }
+        actions={<AddTransactionDialog />}
       />
 
-      <BackendNotReady endpoint="GET /api/dashboard/summary">
-        Until then, each section below shows its empty state so you can see the layout.
-      </BackendNotReady>
-
       <section className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Aggregate balance" icon={Wallet} tint="green" />
-        <StatCard label="Income this month" icon={ArrowDownLeft} tint="emerald" />
-        <StatCard label="Spending this month" icon={ArrowUpRight} tint="amber" />
+        <StatCard
+          label="Aggregate balance"
+          icon={Wallet}
+          tint="green"
+          loading={summary.isLoading}
+          value={summary.data ? formatMoney(summary.data.totalBalance) : undefined}
+        />
+        <StatCard
+          label="Income this month"
+          icon={ArrowDownLeft}
+          tint="emerald"
+          loading={summary.isLoading}
+          value={summary.data ? formatMoney(summary.data.income.month) : undefined}
+        />
+        <StatCard
+          label="Spending this month"
+          icon={ArrowUpRight}
+          tint="amber"
+          loading={summary.isLoading}
+          value={summary.data ? formatMoney(summary.data.expense.month) : undefined}
+        />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -42,11 +89,32 @@ export function Dashboard() {
               </Link>
             }
           >
-            <EmptyState
-              icon={Receipt}
-              title="No transactions yet"
-              description="Logged income and expenses will appear here as soon as the transactions endpoint is live."
-            />
+            {recent.isLoading ? (
+              <Centered>
+                <Spinner size={22} label="Loading transactions" />
+              </Centered>
+            ) : recent.data && recent.data.length > 0 ? (
+              <div className="space-y-2">
+                {recent.data.map((t) => (
+                  <TransactionRow
+                    key={t.id}
+                    date={t.transactionDate}
+                    description={t.description || TYPE_LABEL[t.type]}
+                    wallet={walletName.get(t.walletId)}
+                    category={t.categoryId ? categoryName.get(t.categoryId) : undefined}
+                    amount={t.amount}
+                    direction={directionOf(t.type)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Receipt}
+                title="No transactions yet"
+                description="Log your first income or expense and it'll show up here."
+                action={<AddTransactionDialog />}
+              />
+            )}
           </SectionCard>
 
           <SectionCard
@@ -54,11 +122,34 @@ export function Dashboard() {
             title="Spending by category"
             action={<span className="text-xs text-ink-3">This month</span>}
           >
-            <EmptyState
-              icon={Sparkles}
-              title="No category data yet"
-              description="A breakdown of spending across food, transport, rent and the rest will land once the dashboard summary endpoint exists."
-            />
+            {spending.isLoading ? (
+              <Centered>
+                <Spinner size={22} label="Loading spending" />
+              </Centered>
+            ) : spending.data && spending.data.categories.length > 0 ? (
+              <div className="space-y-3">
+                {spending.data.categories.slice(0, 6).map((c) => (
+                  <div key={c.categoryId ?? 'uncategorised'} className="space-y-1">
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <span className="text-ink">{c.name}</span>
+                      <span className="num font-medium text-ink">{formatMoney(c.amount)}</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-pill bg-surface-2" aria-hidden="true">
+                      <div
+                        className="h-full rounded-pill bg-primary"
+                        style={{ width: `${c.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Sparkles}
+                title="No category data yet"
+                description="A breakdown of where your money goes appears once you log some expenses."
+              />
+            )}
           </SectionCard>
         </div>
 
@@ -72,23 +163,49 @@ export function Dashboard() {
               </Link>
             }
           >
-            <EmptyState
-              icon={Target}
-              title="No goals yet"
-              description="Create a savings goal — a laptop, a trip, an emergency fund — and watch the progress here."
-              action={
-                <Link to="/goals">
-                  <Button variant="primary" size="sm" leftIcon={<Plus size={14} />}>
-                    Add a goal
-                  </Button>
-                </Link>
-              }
-            />
+            {goals.isLoading ? (
+              <Centered>
+                <Spinner size={22} label="Loading goals" />
+              </Centered>
+            ) : goals.data && goals.data.length > 0 ? (
+              <div className="space-y-4">
+                {goals.data.slice(0, 4).map((goal) => (
+                  <div key={goal.id} className="space-y-1">
+                    <div className="flex items-center justify-between gap-2 text-sm">
+                      <span className="text-ink">{goal.name}</span>
+                      <span className="text-ink-3">{goal.progress}%</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-pill bg-surface-2" aria-hidden="true">
+                      <div
+                        className="h-full rounded-pill bg-primary"
+                        style={{ width: `${goal.progress}%` }}
+                      />
+                    </div>
+                    <p className="num text-xs text-ink-3">
+                      {formatMoney(goal.currentAmount)} of {formatMoney(goal.targetAmount)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={Target}
+                title="No goals yet"
+                description="Create a savings goal — a laptop, a trip, an emergency fund — and watch the progress here."
+                action={
+                  <Link to="/goals">
+                    <Button variant="primary" size="sm">
+                      Add a goal
+                    </Button>
+                  </Link>
+                }
+              />
+            )}
           </SectionCard>
 
           <SectionCard
             eyebrow="AI advisor"
-            title="Latest insight"
+            title="Ask Akiba"
             action={
               <Link to="/advisor" className="text-sm font-medium text-primary hover:underline">
                 Open advisor
@@ -97,14 +214,25 @@ export function Dashboard() {
           >
             <EmptyState
               icon={Brain}
-              title="No insights yet"
-              description="Once you have a few transactions and the advisor endpoint is live, judgement-free nudges will appear here."
+              title="Get judgement-free guidance"
+              description="Ask about your budget, spending or goals — the advisor reads your real numbers."
+              action={
+                <Link to="/advisor">
+                  <Button variant="primary" size="sm">
+                    Open advisor
+                  </Button>
+                </Link>
+              }
             />
           </SectionCard>
         </div>
       </section>
     </div>
   );
+}
+
+function Centered({ children }: { children: React.ReactNode }) {
+  return <div className="grid place-items-center py-10">{children}</div>;
 }
 
 interface SectionCardProps {

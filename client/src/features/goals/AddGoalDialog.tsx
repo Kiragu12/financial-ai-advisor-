@@ -1,5 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { useContribute, useCreateGoal } from '../../api/hooks/use-goals';
 import { MoneyInput } from '../../components/finance/MoneyInput';
 import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
@@ -24,16 +25,22 @@ export function AddGoalDialog({ trigger }: AddGoalDialogProps) {
   const [target, setTarget] = useState('');
   const [deadline, setDeadline] = useState('');
   const [initial, setInitial] = useState('');
-  const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; target?: string }>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const createGoal = useCreateGoal();
+  const contribute = useContribute();
+  const pending = createGoal.isPending || contribute.isPending;
 
   function reset() {
     setName('');
     setTarget('');
     setDeadline('');
     setInitial('');
-    setSubmitted(false);
     setErrors({});
+    setSubmitError(null);
+    createGoal.reset();
+    contribute.reset();
   }
 
   function handleOpenChange(next: boolean) {
@@ -41,7 +48,7 @@ export function AddGoalDialog({ trigger }: AddGoalDialogProps) {
     setOpen(next);
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const next: { name?: string; target?: string } = {};
     if (name.trim() === '') next.name = 'Give the goal a name.';
@@ -49,8 +56,23 @@ export function AddGoalDialog({ trigger }: AddGoalDialogProps) {
       next.target = 'Set a target greater than zero.';
     }
     setErrors(next);
-    if (Object.keys(next).length === 0) {
-      setSubmitted(true);
+    if (Object.keys(next).length > 0) return;
+
+    setSubmitError(null);
+    try {
+      const { goal } = await createGoal.mutateAsync({
+        name: name.trim(),
+        targetAmount: Number(target),
+        deadline: deadline || undefined,
+      });
+      // Optional opening contribution — a manual one (no wallet) just seeds the
+      // running total; it doesn't move any wallet balance.
+      if (initial.trim() !== '' && Number(initial) > 0) {
+        await contribute.mutateAsync({ goalId: goal.id, amount: Number(initial) });
+      }
+      handleOpenChange(false);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Please try again.');
     }
   }
 
@@ -110,7 +132,7 @@ export function AddGoalDialog({ trigger }: AddGoalDialogProps) {
               value={deadline}
               onChange={(event) => setDeadline(event.target.value)}
             />
-            <HelperText>Akiba can pace you to this date once the goals endpoint is live.</HelperText>
+            <HelperText>Akiba paces you towards this date.</HelperText>
           </Field>
 
           <Field>
@@ -120,12 +142,12 @@ export function AddGoalDialog({ trigger }: AddGoalDialogProps) {
               value={initial}
               onChange={(event) => setInitial(event.target.value)}
             />
+            <HelperText>Seeds the running total. Doesn&rsquo;t move a wallet balance.</HelperText>
           </Field>
 
-          {submitted ? (
-            <Alert variant="info" title="Backend not ready">
-              The goals endpoint goes live once Paul ships{' '}
-              <code className="font-mono">POST /api/goals</code>.
+          {submitError ? (
+            <Alert variant="error" title="Could not create goal">
+              {submitError}
             </Alert>
           ) : null}
 
@@ -133,7 +155,7 @@ export function AddGoalDialog({ trigger }: AddGoalDialogProps) {
             <Button variant="ghost" type="button" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit">
+            <Button variant="primary" type="submit" loading={pending}>
               Create goal
             </Button>
           </DialogFooter>

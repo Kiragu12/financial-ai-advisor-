@@ -1,5 +1,7 @@
-import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { type FormEvent } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { useRegister } from '../api/hooks/use-auth';
+import { useAuth } from '../features/auth/useAuth';
 import { AuthShell } from '../components/layout/AuthShell';
 import { Alert } from '../components/ui/alert';
 import { Button } from '../components/ui/button';
@@ -8,11 +10,25 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 
 export function Register() {
-  const [submitted, setSubmitted] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
+  const register = useRegister();
+
+  if (!isLoading && isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitted(true);
+    const form = new FormData(event.currentTarget);
+    register.mutate(
+      {
+        fullName: String(form.get('name') ?? ''),
+        email: String(form.get('email') ?? ''),
+        password: String(form.get('password') ?? ''),
+      },
+      { onSuccess: () => navigate('/dashboard', { replace: true }) },
+    );
   }
 
   return (
@@ -69,14 +85,18 @@ export function Register() {
           <HelperText>Use at least 8 characters with a mix of letters and numbers.</HelperText>
         </Field>
 
-        <Button variant="primary" type="submit" className="w-full justify-center">
+        <Button
+          variant="primary"
+          type="submit"
+          className="w-full justify-center"
+          loading={register.isPending}
+        >
           Create account
         </Button>
 
-        {submitted ? (
-          <Alert variant="info" title="Backend not ready">
-            Registration goes live once Paul ships{' '}
-            <code className="font-mono">POST /api/auth/register</code>. Form is wired and waiting.
+        {register.isError ? (
+          <Alert variant="error" title="Could not create account">
+            {register.error instanceof Error ? register.error.message : 'Please try again.'}
           </Alert>
         ) : null}
       </form>

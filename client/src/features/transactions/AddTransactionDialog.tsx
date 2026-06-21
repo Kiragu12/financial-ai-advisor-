@@ -1,5 +1,8 @@
 import { Plus } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { useCategories } from '../../api/hooks/use-categories';
+import { useCreateTransaction } from '../../api/hooks/use-transactions';
+import { useWallets } from '../../api/hooks/use-wallets';
 import { MoneyInput } from '../../components/finance/MoneyInput';
 import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
@@ -36,18 +39,28 @@ export function AddTransactionDialog({
   const [open, setOpen] = useState(false);
   const [direction, setDirection] = useState<Direction>(defaultDirection);
   const [amount, setAmount] = useState('');
+  const [walletId, setWalletId] = useState('');
+  const [categoryId, setCategoryId] = useState('');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(todayIso);
-  const [submitted, setSubmitted] = useState(false);
   const [amountError, setAmountError] = useState<string | null>(null);
+
+  const { data: wallets = [] } = useWallets();
+  const { data: categories = [] } = useCategories(direction);
+  const createTransaction = useCreateTransaction();
+
+  // Default to the first wallet until the user picks one.
+  const effectiveWalletId = walletId || wallets[0]?.id || '';
 
   function reset() {
     setDirection(defaultDirection);
     setAmount('');
+    setWalletId('');
+    setCategoryId('');
     setNote('');
     setDate(todayIso());
-    setSubmitted(false);
     setAmountError(null);
+    createTransaction.reset();
   }
 
   function handleOpenChange(next: boolean) {
@@ -61,9 +74,22 @@ export function AddTransactionDialog({
       setAmountError('Enter an amount greater than zero.');
       return;
     }
+    if (!effectiveWalletId) return;
     setAmountError(null);
-    setSubmitted(true);
+    createTransaction.mutate(
+      {
+        walletId: effectiveWalletId,
+        type: direction,
+        amount: Number(amount),
+        categoryId: categoryId || undefined,
+        description: note.trim() || undefined,
+        transactionDate: date,
+      },
+      { onSuccess: () => handleOpenChange(false) },
+    );
   }
+
+  const noWallets = wallets.length === 0;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -78,7 +104,7 @@ export function AddTransactionDialog({
         <DialogHeader
           eyebrow="New transaction"
           title="Log an income or expense"
-          description="Quick entry — categorise it later when those endpoints exist."
+          description="Pick a wallet, an amount and (optionally) a category."
         />
         <form onSubmit={handleSubmit} noValidate className="grid gap-5">
           <Field>
@@ -86,12 +112,18 @@ export function AddTransactionDialog({
             <div className="flex gap-2 rounded-card-sm border border-line bg-surface-2 p-1">
               <DirectionToggle
                 active={direction === 'expense'}
-                onClick={() => setDirection('expense')}
+                onClick={() => {
+                  setDirection('expense');
+                  setCategoryId('');
+                }}
                 label="Expense"
               />
               <DirectionToggle
                 active={direction === 'income'}
-                onClick={() => setDirection('income')}
+                onClick={() => {
+                  setDirection('income');
+                  setCategoryId('');
+                }}
                 label="Income"
               />
             </div>
@@ -115,18 +147,43 @@ export function AddTransactionDialog({
 
           <Field>
             <Label htmlFor="tx-wallet">Wallet</Label>
-            <select id="tx-wallet" className="input" disabled>
-              <option>No wallets available yet</option>
+            <select
+              id="tx-wallet"
+              className="input"
+              value={effectiveWalletId}
+              onChange={(event) => setWalletId(event.target.value)}
+              disabled={noWallets}
+            >
+              {noWallets ? (
+                <option>Add a wallet first</option>
+              ) : (
+                wallets.map((wallet) => (
+                  <option key={wallet.id} value={wallet.id}>
+                    {wallet.name}
+                  </option>
+                ))
+              )}
             </select>
-            <HelperText>The picker fills in once GET /api/wallets ships.</HelperText>
+            {noWallets ? (
+              <HelperText>You need at least one wallet before logging a transaction.</HelperText>
+            ) : null}
           </Field>
 
           <Field>
-            <Label htmlFor="tx-category">Category</Label>
-            <select id="tx-category" className="input" disabled>
-              <option>No categories available yet</option>
+            <Label htmlFor="tx-category">Category (optional)</Label>
+            <select
+              id="tx-category"
+              className="input"
+              value={categoryId}
+              onChange={(event) => setCategoryId(event.target.value)}
+            >
+              <option value="">Uncategorised</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
             </select>
-            <HelperText>Categories arrive with GET /api/categories.</HelperText>
           </Field>
 
           <Field>
@@ -151,10 +208,11 @@ export function AddTransactionDialog({
             />
           </Field>
 
-          {submitted ? (
-            <Alert variant="info" title="Backend not ready">
-              The transactions endpoint goes live once Paul ships{' '}
-              <code className="font-mono">POST /api/transactions</code>.
+          {createTransaction.isError ? (
+            <Alert variant="error" title="Could not save transaction">
+              {createTransaction.error instanceof Error
+                ? createTransaction.error.message
+                : 'Please try again.'}
             </Alert>
           ) : null}
 
@@ -162,7 +220,12 @@ export function AddTransactionDialog({
             <Button variant="ghost" type="button" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit">
+            <Button
+              variant="primary"
+              type="submit"
+              loading={createTransaction.isPending}
+              disabled={noWallets}
+            >
               Save transaction
             </Button>
           </DialogFooter>

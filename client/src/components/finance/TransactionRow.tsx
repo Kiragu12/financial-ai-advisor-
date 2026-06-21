@@ -11,8 +11,8 @@ interface TransactionRowProps {
   description: ReactNode;
   category?: ReactNode;
   wallet?: ReactNode;
-  /** Decimal-string amount from the backend. */
-  amount: string;
+  /** Numeric amount from the backend. */
+  amount: number;
   direction: Direction;
   className?: string;
 }

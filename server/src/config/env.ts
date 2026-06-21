@@ -9,6 +9,12 @@ const schema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('7d'),
   COOKIE_NAME: z.string().default('akiba_token'),
+  // Optional so the server still boots without AI configured — only the
+  // advisor module needs these. The advisor returns a clear error if the key
+  // is missing at call time. Default model is the most capable Claude tier;
+  // override with claude-sonnet-4-6 or claude-haiku-4-5 to trade quality for cost.
+  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_MODEL: z.string().default('claude-opus-4-8'),
 });
 
 const parsed = schema.safeParse(process.env);
@@ -21,3 +27,17 @@ if (!parsed.success) {
 
 export const env = parsed.data;
 export type Env = typeof env;
+
+// Production sanity checks — fail fast on config that would silently break the
+// deployed app rather than discovering it after release.
+if (env.NODE_ENV === 'production') {
+  const problems: string[] = [];
+  if (env.CORS_ORIGIN.includes('localhost')) {
+    problems.push('CORS_ORIGIN still points at localhost — set it to the deployed frontend URL.');
+  }
+  if (problems.length > 0) {
+    console.error('[config] Invalid production configuration:');
+    for (const p of problems) console.error(`  - ${p}`);
+    process.exit(1);
+  }
+}

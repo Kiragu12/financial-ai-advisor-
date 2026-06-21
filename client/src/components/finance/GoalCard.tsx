@@ -9,9 +9,9 @@ interface GoalCardProps {
   name: ReactNode;
   /** Server-computed progress percentage 0–100. */
   progressPercent: number;
-  /** Decimal strings from the backend. */
-  current: string;
-  target: string;
+  /** Numeric amounts from the backend. */
+  current: number;
+  target: number;
   deadline?: string;
   action?: ReactNode;
   className?: string;

@@ -124,39 +124,53 @@ Use this checklist before starting non-trivial tasks in this repository.
 - [ ] Wire transfer frontend flow to backend transfer API.
 - [ ] Decide whether transfer reversal/delete is in scope.
 
-### Phase 6: Savings Goals
+### Phase 6: Savings Goals (backend done)
 
-- [ ] Create savings goal model.
-- [ ] Implement goal creation, progress tracking, updates, and completion status.
+- [x] Create savings goal model (goals module: types, schemas, repository, service, controller, routes).
+- [x] Implement goal creation, progress tracking, updates, and completion status (auto-completes when a contribution reaches target).
+- [x] Implement contributions, optionally drawn from a wallet (atomic: locks goal + wallet, writes an expense transaction for balance integrity, debits wallet, updates goal — all in one DB transaction).
 - [x] Build savings goal screens as backend-ready empty states.
-- [ ] Test progress calculations and validation rules.
+- [ ] Wire goal frontend screens to backend goal APIs. (frontend owner)
+- [x] Test progress calculations and validation rules (progress %, completion, insufficient funds rollback, paused/completed guards, target-below-saved guard, cross-user 404 all verified live).
+- Endpoints: GET/POST /api/goals, GET/PATCH /api/goals/:id, GET/POST /api/goals/:id/contributions.
 
-### Phase 7: Dashboard and Analytics
+### Phase 7: Dashboard and Analytics (backend done)
 
-- [ ] Aggregate total balances across wallets.
-- [ ] Compute spending by category.
-- [ ] Compute income versus expense trends.
-- [ ] Show savings progress summaries.
+- [x] Aggregate total balances across wallets (dashboard module: types, schemas, repository, service, controller, routes).
+- [x] Compute spending by category (date-ranged; null-category rows shown as "Uncategorized"; percentages of period total).
+- [x] Compute income versus expense trends (monthly cashflow; transfers excluded as internal movements).
+- [x] Show savings progress summaries (active/completed counts, total saved vs target).
 - [x] Build responsive dashboard UI as backend-ready empty states.
-- [ ] Test analytics queries against known seed data.
+- [ ] Wire dashboard screens to backend dashboard APIs. (frontend owner)
+- [x] Test analytics queries against known seed data (balance/income/expense/net/category %/cashflow all hand-verified; empty account returns zeros not nulls; bad query params rejected; cross-user scoped; 401 unauth).
+- Endpoints: GET /api/dashboard/summary, GET /api/dashboard/spending-by-category, GET /api/dashboard/cashflow.
 
-### Phase 8: AI Financial Advisor
+### Phase 8: AI Financial Advisor (backend done)
 
-- [ ] Store conversations and messages.
-- [ ] Build a context builder from recent transactions, category summaries, wallet balances, and savings goals.
-- [ ] Add advisor safety boundaries and disclaimers for non-regulated guidance.
-- [ ] Integrate the Claude API behind a backend service.
+- [x] Store conversations and messages (advisor module: types, schemas, repository, context, client, service, controller, routes).
+- [x] Build a context builder from recent transactions, category summaries, wallet balances, and savings goals (advisor.context.ts, reuses dashboard aggregations).
+- [x] Add advisor safety boundaries and disclaimers for non-regulated guidance (Akiba persona in advisor.client.ts: KES, student-focused, not-a-licensed-advisor disclaimer).
+- [x] Integrate the Claude API behind a backend service (advisor.client.ts — only file touching @anthropic-ai/sdk; model via ANTHROPIC_MODEL env, default claude-opus-4-8, adaptive thinking).
 - [x] Build the advisor chat interface as a backend-ready empty state.
-- [ ] Test prompt construction, error handling, rate-limit handling, and response persistence.
+- [ ] Wire advisor chat screen to backend advisor APIs. (frontend owner)
+- [x] Test prompt construction, error handling, response persistence (CRUD, cross-user 404, 401, empty-message 400, graceful "not configured" 400 with no orphan message all verified; atomic persist-after-reply confirmed).
+- [ ] Live end-to-end test pending an ANTHROPIC_API_KEY in server/.env (then verify a real reply + persistence).
+- Endpoints: GET/POST /api/advisor/conversations, GET /api/advisor/conversations/:id, POST /api/advisor/conversations/:id/messages.
+- Notes: ANTHROPIC_API_KEY optional (server boots without it); non-streaming v1 (streaming a future enhancement); rate-limit handling relies on SDK auto-retry.
 
-### Phase 9: Quality, Security, and Deployment
+### Phase 9: Quality, Security, and Deployment (backend hardening done)
 
-- [ ] Add end-to-end checks for the main user flows.
-- [ ] Review security risks: auth, ownership checks, secrets, input validation, and AI data handling.
-- [ ] Prepare production environment variables.
-- [ ] Deploy frontend to Vercel.
-- [ ] Deploy backend and PostgreSQL to Railway.
-- [ ] Verify the deployed system end to end.
+- [x] Security review: auth (JWT httpOnly cookie, bcrypt 12), ownership (every query user_id-scoped), secrets (.env gitignored + untracked, verified), input validation (Zod + parameterised SQL), AI data handling (no secrets in advisor context).
+- [x] Add rate limiting: global per-IP ceiling, tight login/register limit (brute-force), per-minute advisor cap (API-cost abuse). Auth limiter verified live (11th failed login → 429; health unaffected).
+- [x] Hardening: helmet, CORS locked to explicit origin, 100KB JSON body limit, trust proxy in production, graceful SIGTERM/SIGINT shutdown (closes HTTP server + pg pool).
+- [x] Production config guard: env.ts fails fast if CORS_ORIGIN is localhost in production.
+- [x] Prepare production environment variables (documented in server/README.md with required/optional table).
+- [x] Production build verified (npm run build → dist/server.js).
+- [x] Deployment guide written (server/README.md: Railway/Render/Fly build+start+healthcheck+migrate steps; DB stays on Supabase).
+- [ ] Deploy frontend to Vercel. (frontend owner)
+- [ ] Deploy backend to Railway/Render and run migrations against prod DB. (Paul — when ready; needs prod CORS_ORIGIN + secrets)
+- [ ] Verify the deployed system end to end. (after deploy)
+- [ ] Live AI advisor end-to-end test still pending an ANTHROPIC_API_KEY (carried from Phase 8).
 
 ### Phase 10: Documentation and Final Submission Support
 

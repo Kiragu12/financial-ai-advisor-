@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../../shared/async-handler.js';
 import { validate } from '../../middleware/validate.js';
 import { requireAuth } from '../../middleware/require-auth.js';
+import { authLimiter } from '../../middleware/rate-limit.js';
 import { registerSchema, loginSchema } from './auth.schemas.js';
 import * as authController from './auth.controller.js';
 
@@ -17,12 +18,14 @@ export const authRouter = Router();
 
 authRouter.post(
   '/register',
+  authLimiter,
   validate({ body: registerSchema }),
   asyncHandler(authController.register),
 );
 
 authRouter.post(
   '/login',
+  authLimiter,
   validate({ body: loginSchema }),
   asyncHandler(authController.login),
 );

@@ -1,4 +1,6 @@
 import { LogOut, Menu, Settings, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useLogout } from '../../api/hooks/use-auth';
 import { useAuth } from '../../features/auth/useAuth';
 import { Avatar } from '../ui/avatar';
 import { Button } from '../ui/button';
@@ -16,7 +18,20 @@ interface TopbarProps {
 }
 
 export function Topbar({ onOpenSidebar }: TopbarProps) {
-  const { signOut } = useAuth();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const logout = useLogout();
+
+  const displayName = user?.fullName ?? 'Akiba User';
+
+  function handleLogout() {
+    logout.mutate(undefined, {
+      // Navigate regardless — even if the network call fails, the local session
+      // cache has been cleared, so send the user to the login screen.
+      onSettled: () => navigate('/login', { replace: true }),
+    });
+  }
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-line bg-bg/85 px-4 backdrop-blur sm:px-6">
       <Button
@@ -38,16 +53,16 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
             aria-label="Open account menu"
             className="rounded-pill outline-none focus-visible:shadow-ring"
           >
-            <Avatar name="Akiba User" size="sm" />
+            <Avatar name={displayName} size="sm" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Signed-in placeholder</DropdownMenuLabel>
+          <DropdownMenuLabel>Account</DropdownMenuLabel>
           <DropdownMenuItem disabled>
-            <Avatar name="Akiba User" size="sm" />
+            <Avatar name={displayName} size="sm" />
             <span className="flex flex-col">
-              <span className="font-medium">Not signed in</span>
-              <span className="text-xs text-ink-3">Auth lands when the backend ships it</span>
+              <span className="font-medium">{displayName}</span>
+              {user?.email ? <span className="text-xs text-ink-3">{user.email}</span> : null}
             </span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -58,7 +73,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
             <Settings size={16} /> Settings
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => signOut()}>
+          <DropdownMenuItem onSelect={handleLogout}>
             <LogOut size={16} /> Log out
           </DropdownMenuItem>
         </DropdownMenuContent>

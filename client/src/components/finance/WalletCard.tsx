@@ -9,8 +9,8 @@ type Tint = 'green' | 'emerald' | 'blue' | 'violet' | 'amber' | 'teal' | 'pink' 
 interface WalletCardProps {
   name: ReactNode;
   type: ReactNode;
-  /** Decimal-string balance from the backend, e.g. "1500.00". */
-  balance: string;
+  /** Numeric balance from the backend. */
+  balance: number;
   tint?: Tint;
   icon?: LucideIcon;
   action?: ReactNode;
