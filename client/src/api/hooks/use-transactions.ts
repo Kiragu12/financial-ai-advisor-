@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../client';
+import { queryKeys, type TransactionFiltersKey } from '../query-keys';
 import type {
   Transaction,
   TransactionResponse,
@@ -11,15 +12,7 @@ import type {
  * invalidate wallets and the dashboard alongside the transaction list.
  */
 
-export interface TransactionFilters {
-  walletId?: string;
-  categoryId?: string;
-  type?: 'income' | 'expense';
-  from?: string;
-  to?: string;
-  limit?: number;
-  offset?: number;
-}
+export type TransactionFilters = TransactionFiltersKey;
 
 function toQueryString(filters: TransactionFilters): string {
   const params = new URLSearchParams();
@@ -32,7 +25,7 @@ function toQueryString(filters: TransactionFilters): string {
 
 export function useTransactions(filters: TransactionFilters = {}) {
   return useQuery({
-    queryKey: ['transactions', filters] as const,
+    queryKey: queryKeys.transactions.list(filters),
     queryFn: async (): Promise<Transaction[]> => {
       const { transactions } = await api.get<TransactionsResponse>(
         `/api/transactions${toQueryString(filters)}`,
@@ -52,9 +45,9 @@ export interface CreateTransactionInput {
 }
 
 function invalidateMoneyViews(qc: ReturnType<typeof useQueryClient>) {
-  qc.invalidateQueries({ queryKey: ['transactions'] });
-  qc.invalidateQueries({ queryKey: ['wallets'] });
-  qc.invalidateQueries({ queryKey: ['dashboard'] });
+  qc.invalidateQueries({ queryKey: queryKeys.transactions.all });
+  qc.invalidateQueries({ queryKey: queryKeys.wallets.all });
+  qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
 }
 
 export function useCreateTransaction() {

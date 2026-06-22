@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 import { formatDate } from '../../lib/date';
 import { formatMoney } from '../../lib/money';
@@ -17,7 +17,7 @@ interface TransactionRowProps {
   className?: string;
 }
 
-export function TransactionRow({
+function TransactionRowImpl({
   date,
   description,
   category,
@@ -59,3 +59,5 @@ export function TransactionRow({
     </div>
   );
 }
+
+export const TransactionRow = memo(TransactionRowImpl);

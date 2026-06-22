@@ -170,7 +170,7 @@ const features = [
     tint: 'violet' as const,
     icon: Brain,
     title: 'AI advisor, on your side',
-    body: 'Friendly, judgement-free nudges. Ask about your budget, goals or last month&rsquo;s spending.',
+    body: 'Friendly, judgement-free nudges. Ask about your budget, goals or last month’s spending.',
   },
 ] as const;
 
@@ -193,10 +193,7 @@ function Features() {
                   <Icon size={22} />
                 </span>
                 <h3 className="text-lg font-semibold text-ink">{f.title}</h3>
-                <p
-                  className="mt-2 text-sm leading-6 text-ink-2"
-                  dangerouslySetInnerHTML={{ __html: f.body }}
-                />
+                <p className="mt-2 text-sm leading-6 text-ink-2">{f.body}</p>
               </Card>
             );
           })}

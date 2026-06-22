@@ -1,5 +1,5 @@
 import { Wallet, type LucideIcon } from 'lucide-react';
-import { type ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 import { formatMoney } from '../../lib/money';
 import { Card } from '../ui/card';
@@ -17,7 +17,7 @@ interface WalletCardProps {
   className?: string;
 }
 
-export function WalletCard({
+function WalletCardImpl({
   name,
   type,
   balance,
@@ -42,3 +42,5 @@ export function WalletCard({
     </Card>
   );
 }
+
+export const WalletCard = memo(WalletCardImpl);

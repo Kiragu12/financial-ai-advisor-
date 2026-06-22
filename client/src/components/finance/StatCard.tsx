@@ -1,5 +1,5 @@
 import { type LucideIcon } from 'lucide-react';
-import { type ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 import { Card } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
@@ -16,7 +16,7 @@ interface StatCardProps {
   className?: string;
 }
 
-export function StatCard({
+function StatCardImpl({
   label,
   value,
   hint,
@@ -46,3 +46,5 @@ export function StatCard({
     </Card>
   );
 }
+
+export const StatCard = memo(StatCardImpl);

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../client';
+import { queryKeys } from '../query-keys';
 import type {
   ContributionResponse,
   Goal,
@@ -14,11 +15,12 @@ import type {
  * in addition to goals.
  */
 
-export const GOALS_KEY = ['goals'] as const;
+/** @deprecated Use queryKeys.goals.all — kept for one release. */
+export const GOALS_KEY = queryKeys.goals.all;
 
 export function useGoals(status?: GoalStatus) {
   return useQuery({
-    queryKey: ['goals', status ?? 'all'] as const,
+    queryKey: queryKeys.goals.list(status),
     queryFn: async (): Promise<Goal[]> => {
       const query = status ? `?status=${status}` : '';
       const { goals } = await api.get<GoalsResponse>(`/api/goals${query}`);
@@ -38,8 +40,8 @@ export function useCreateGoal() {
   return useMutation({
     mutationFn: (body: CreateGoalInput) => api.post<GoalResponse>('/api/goals', body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: GOALS_KEY });
-      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: queryKeys.goals.all });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
     },
   });
 }
@@ -58,10 +60,10 @@ export function useContribute() {
     mutationFn: ({ goalId, ...body }: ContributeInput) =>
       api.post<ContributionResponse>(`/api/goals/${goalId}/contributions`, body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: GOALS_KEY });
-      qc.invalidateQueries({ queryKey: ['wallets'] });
-      qc.invalidateQueries({ queryKey: ['transactions'] });
-      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: queryKeys.goals.all });
+      qc.invalidateQueries({ queryKey: queryKeys.wallets.all });
+      qc.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
     },
   });
 }
