@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { queryKeys } from '../query-keys';
 import type {
   Cashflow,
   DashboardSummary,
@@ -14,7 +15,7 @@ import type {
 
 export function useDashboardSummary() {
   return useQuery({
-    queryKey: ['dashboard', 'summary'] as const,
+    queryKey: queryKeys.dashboard.summary,
     queryFn: async (): Promise<DashboardSummary> => {
       const { summary } = await api.get<SummaryResponse>('/api/dashboard/summary');
       return summary;
@@ -24,14 +25,14 @@ export function useDashboardSummary() {
 
 export function useSpendingByCategory() {
   return useQuery({
-    queryKey: ['dashboard', 'spending'] as const,
+    queryKey: queryKeys.dashboard.spending,
     queryFn: () => api.get<SpendingByCategory>('/api/dashboard/spending-by-category'),
   });
 }
 
 export function useCashflow(months = 6) {
   return useQuery({
-    queryKey: ['dashboard', 'cashflow', months] as const,
+    queryKey: queryKeys.dashboard.cashflow(months),
     queryFn: () => api.get<Cashflow>(`/api/dashboard/cashflow?months=${months}`),
   });
 }

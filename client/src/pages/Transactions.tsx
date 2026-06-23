@@ -4,7 +4,6 @@ import { useCategories } from '../api/hooks/use-categories';
 import { useDashboardSummary } from '../api/hooks/use-dashboard';
 import { useTransactions } from '../api/hooks/use-transactions';
 import { useWallets } from '../api/hooks/use-wallets';
-import type { TransactionType } from '../api/types';
 import { EmptyState } from '../components/finance/EmptyState';
 import { StatCard } from '../components/finance/StatCard';
 import { TransactionRow } from '../components/finance/TransactionRow';
@@ -16,19 +15,9 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Spinner } from '../components/ui/spinner';
 import { formatMoney } from '../lib/money';
+import { TRANSACTION_TYPE_LABEL, directionOf } from '../lib/transaction';
 import { AddTransactionDialog } from '../features/transactions/AddTransactionDialog';
 import { TransferDialog } from '../features/transfers/TransferDialog';
-
-const TYPE_LABEL: Record<TransactionType, string> = {
-  income: 'Income',
-  expense: 'Expense',
-  transfer_in: 'Transfer in',
-  transfer_out: 'Transfer out',
-};
-
-function directionOf(type: TransactionType): 'income' | 'expense' {
-  return type === 'income' || type === 'transfer_in' ? 'income' : 'expense';
-}
 
 export function Transactions() {
   const [query, setQuery] = useState('');
@@ -57,7 +46,7 @@ export function Transactions() {
       const haystack = [
         t.description ?? '',
         t.categoryId ? categoryName.get(t.categoryId) ?? '' : '',
-        TYPE_LABEL[t.type],
+        TRANSACTION_TYPE_LABEL[t.type],
       ]
         .join(' ')
         .toLowerCase();
@@ -148,7 +137,7 @@ export function Transactions() {
               <TransactionRow
                 key={t.id}
                 date={t.transactionDate}
-                description={t.description || TYPE_LABEL[t.type]}
+                description={t.description || TRANSACTION_TYPE_LABEL[t.type]}
                 wallet={walletName.get(t.walletId)}
                 category={t.categoryId ? categoryName.get(t.categoryId) : undefined}
                 amount={t.amount}

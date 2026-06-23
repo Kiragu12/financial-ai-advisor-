@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../client';
+import { queryKeys } from '../query-keys';
 import type {
   Conversation,
   ConversationDetail,
@@ -17,7 +18,7 @@ import type {
 
 export function useConversations() {
   return useQuery({
-    queryKey: ['advisor', 'conversations'] as const,
+    queryKey: queryKeys.advisor.conversations,
     queryFn: async (): Promise<Conversation[]> => {
       const { conversations } = await api.get<ConversationsResponse>(
         '/api/advisor/conversations',
@@ -29,7 +30,7 @@ export function useConversations() {
 
 export function useConversation(conversationId: string | null) {
   return useQuery({
-    queryKey: ['advisor', 'conversation', conversationId] as const,
+    queryKey: queryKeys.advisor.conversation(conversationId),
     enabled: conversationId !== null,
     queryFn: async (): Promise<ConversationDetail> => {
       const { conversation } = await api.get<ConversationResponse>(
@@ -45,7 +46,7 @@ export function useCreateConversation() {
   return useMutation({
     mutationFn: (body: { title?: string }) =>
       api.post<CreateConversationResponse>('/api/advisor/conversations', body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['advisor', 'conversations'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.advisor.conversations }),
   });
 }
 
@@ -58,8 +59,8 @@ export function useSendMessage() {
         { content },
       ),
     onSuccess: (_data, { conversationId }) => {
-      qc.invalidateQueries({ queryKey: ['advisor', 'conversation', conversationId] });
-      qc.invalidateQueries({ queryKey: ['advisor', 'conversations'] });
+      qc.invalidateQueries({ queryKey: queryKeys.advisor.conversation(conversationId) });
+      qc.invalidateQueries({ queryKey: queryKeys.advisor.conversations });
     },
   });
 }

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../client';
+import { queryKeys } from '../query-keys';
 import type { Wallet, WalletResponse, WalletsResponse, WalletType } from '../types';
 
 /**
@@ -7,11 +8,12 @@ import type { Wallet, WalletResponse, WalletsResponse, WalletType } from '../typ
  * balances feed the aggregate figures there.
  */
 
-export const WALLETS_KEY = ['wallets'] as const;
+/** @deprecated Use queryKeys.wallets.all — kept for one release. */
+export const WALLETS_KEY = queryKeys.wallets.all;
 
 export function useWallets() {
   return useQuery({
-    queryKey: WALLETS_KEY,
+    queryKey: queryKeys.wallets.all,
     queryFn: async (): Promise<Wallet[]> => {
       const { wallets } = await api.get<WalletsResponse>('/api/wallets');
       return wallets;
@@ -32,8 +34,8 @@ export function useCreateWallet() {
     mutationFn: (body: CreateWalletInput) =>
       api.post<WalletResponse>('/api/wallets', body),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: WALLETS_KEY });
-      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: queryKeys.wallets.all });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
     },
   });
 }
@@ -44,8 +46,8 @@ export function useDeleteWallet() {
     mutationFn: (walletId: string) =>
       api.delete<WalletResponse>(`/api/wallets/${walletId}`),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: WALLETS_KEY });
-      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      qc.invalidateQueries({ queryKey: queryKeys.wallets.all });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
     },
   });
 }

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError } from '../client';
+import { queryKeys } from '../query-keys';
 import type { AuthResponse, MeResponse, PublicUser } from '../types';
 
 /**
@@ -11,12 +12,13 @@ import type { AuthResponse, MeResponse, PublicUser } from '../types';
  * for that; login/register/logout update its cache so the whole app reacts.
  */
 
-export const ME_KEY = ['me'] as const;
+/** @deprecated Use queryKeys.me — kept for one release so external imports still resolve. */
+export const ME_KEY = queryKeys.me;
 
 /** Resolves to the signed-in user, or null when the session is invalid/absent. */
 export function useMe() {
   return useQuery({
-    queryKey: ME_KEY,
+    queryKey: queryKeys.me,
     queryFn: async (): Promise<PublicUser | null> => {
       try {
         const { user } = await api.get<MeResponse>('/api/auth/me');
@@ -37,7 +39,7 @@ export function useLogin() {
   return useMutation({
     mutationFn: (body: { email: string; password: string }) =>
       api.post<AuthResponse>('/api/auth/login', body),
-    onSuccess: ({ user }) => qc.setQueryData(ME_KEY, user),
+    onSuccess: ({ user }) => qc.setQueryData(queryKeys.me, user),
   });
 }
 
@@ -50,7 +52,7 @@ export function useRegister() {
       password: string;
       preferredCurrency?: string;
     }) => api.post<AuthResponse>('/api/auth/register', body),
-    onSuccess: ({ user }) => qc.setQueryData(ME_KEY, user),
+    onSuccess: ({ user }) => qc.setQueryData(queryKeys.me, user),
   });
 }
 
@@ -63,7 +65,7 @@ export function useLogout() {
       // one's wallets/transactions, then re-seed ['me'] as null (fresh, so the
       // active observer marks us unauthenticated without an extra /me round-trip).
       qc.removeQueries();
-      qc.setQueryData(ME_KEY, null);
+      qc.setQueryData(queryKeys.me, null);
     },
   });
 }

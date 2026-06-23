@@ -23,3 +23,12 @@ export function formatDateTime(iso: string): string {
   if (Number.isNaN(date.getTime())) return iso;
   return DATE_TIME.format(date);
 }
+
+/** Local-time YYYY-MM-DD string for today. Matches the backend's calendar-date inputs. */
+export function todayIso(): string {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}

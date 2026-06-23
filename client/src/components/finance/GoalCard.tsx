@@ -1,5 +1,5 @@
 import { Target } from 'lucide-react';
-import { type ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { cn } from '../../lib/cn';
 import { formatDate } from '../../lib/date';
 import { formatMoney } from '../../lib/money';
@@ -17,7 +17,7 @@ interface GoalCardProps {
   className?: string;
 }
 
-export function GoalCard({
+function GoalCardImpl({
   name,
   progressPercent,
   current,
@@ -59,3 +59,5 @@ export function GoalCard({
     </Card>
   );
 }
+
+export const GoalCard = memo(GoalCardImpl);

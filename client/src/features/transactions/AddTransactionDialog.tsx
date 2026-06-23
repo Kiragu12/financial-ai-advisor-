@@ -16,20 +16,13 @@ import {
 import { ErrorText, Field, HelperText } from '../../components/ui/field';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { todayIso } from '../../lib/date';
 
 type Direction = 'expense' | 'income';
 
 interface AddTransactionDialogProps {
   trigger?: ReactNode;
   defaultDirection?: Direction;
-}
-
-function todayIso(): string {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }
 
 export function AddTransactionDialog({

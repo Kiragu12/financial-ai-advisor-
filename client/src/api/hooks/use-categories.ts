@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../client';
+import { queryKeys } from '../query-keys';
 import type { CategoriesResponse, Category, CategoryType } from '../types';
 
 /**
@@ -8,7 +9,7 @@ import type { CategoriesResponse, Category, CategoryType } from '../types';
  */
 export function useCategories(type?: CategoryType) {
   return useQuery({
-    queryKey: ['categories', type ?? 'all'] as const,
+    queryKey: queryKeys.categories.list(type),
     queryFn: async (): Promise<Category[]> => {
       const query = type ? `?type=${type}` : '';
       const { categories } = await api.get<CategoriesResponse>(`/api/categories${query}`);
