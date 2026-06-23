@@ -25,13 +25,16 @@ Boundaries: you are not a licensed financial advisor. For anything involving inv
 let client: Anthropic | null = null;
 
 function getClient(): Anthropic {
-  if (!env.ANTHROPIC_API_KEY) {
+  if (!env.DEEPSEEK_API_KEY) {
     throw AppError.badRequest(
-      'The AI advisor is not configured. Set ANTHROPIC_API_KEY on the server.',
+      'The AI advisor is not configured. Set DEEPSEEK_API_KEY on the server.',
     );
   }
   if (!client) {
-    client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+    client = new Anthropic({
+      apiKey: env.DEEPSEEK_API_KEY,
+      baseURL: env.DEEPSEEK_BASE_URL,
+    });
   }
   return client;
 }
@@ -52,7 +55,7 @@ export async function generateReply(
   const anthropic = getClient();
 
   const response = await anthropic.messages.create({
-    model: env.ANTHROPIC_MODEL,
+    model: env.DEEPSEEK_MODEL,
     max_tokens: 2048,
     thinking: { type: 'adaptive' },
     system: `${ADVISOR_PERSONA}\n\n${financialContext}`,

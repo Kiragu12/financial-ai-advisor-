@@ -1,5 +1,8 @@
-import 'dotenv/config';
+import { existsSync } from 'node:fs';
+import { config } from 'dotenv';
 import { z } from 'zod';
+
+config({ path: existsSync('server/.env') ? 'server/.env' : '.env' });
 
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -13,8 +16,9 @@ const schema = z.object({
   // advisor module needs these. The advisor returns a clear error if the key
   // is missing at call time. Default model is the most capable Claude tier;
   // override with claude-sonnet-4-6 or claude-haiku-4-5 to trade quality for cost.
-  ANTHROPIC_API_KEY: z.string().optional(),
-  ANTHROPIC_MODEL: z.string().default('claude-opus-4-8'),
+  DEEPSEEK_API_KEY: z.string().optional(),
+  DEEPSEEK_MODEL: z.string().default('deepseek-v4-flash'),
+  DEEPSEEK_BASE_URL: z.string().url().default('https://api.deepseek.com/anthropic'),
 });
 
 const parsed = schema.safeParse(process.env);
