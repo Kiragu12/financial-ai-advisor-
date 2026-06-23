@@ -14,6 +14,7 @@ import {
 import { ErrorText, Field, HelperText } from '../../components/ui/field';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
+import { todayIso } from '../../lib/date';
 
 interface AddGoalDialogProps {
   trigger?: ReactNode;
@@ -25,7 +26,7 @@ export function AddGoalDialog({ trigger }: AddGoalDialogProps) {
   const [target, setTarget] = useState('');
   const [deadline, setDeadline] = useState('');
   const [initial, setInitial] = useState('');
-  const [errors, setErrors] = useState<{ name?: string; target?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; target?: string; deadline?: string }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const createGoal = useCreateGoal();
@@ -50,10 +51,13 @@ export function AddGoalDialog({ trigger }: AddGoalDialogProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const next: { name?: string; target?: string } = {};
+    const next: { name?: string; target?: string; deadline?: string } = {};
     if (name.trim() === '') next.name = 'Give the goal a name.';
     if (target.trim() === '' || Number(target) <= 0) {
       next.target = 'Set a target greater than zero.';
+    }
+    if (deadline && deadline < todayIso()) {
+      next.deadline = 'Deadline cannot be in the past.';
     }
     setErrors(next);
     if (Object.keys(next).length > 0) return;
@@ -130,9 +134,18 @@ export function AddGoalDialog({ trigger }: AddGoalDialogProps) {
               id="goal-deadline"
               type="date"
               value={deadline}
-              onChange={(event) => setDeadline(event.target.value)}
+              min={todayIso()}
+              invalid={Boolean(errors.deadline)}
+              onChange={(event) => {
+                setDeadline(event.target.value);
+                if (errors.deadline) setErrors((prev) => ({ ...prev, deadline: undefined }));
+              }}
             />
-            <HelperText>Akiba paces you towards this date.</HelperText>
+            {errors.deadline ? (
+              <ErrorText>{errors.deadline}</ErrorText>
+            ) : (
+              <HelperText>Akiba paces you towards this date.</HelperText>
+            )}
           </Field>
 
           <Field>

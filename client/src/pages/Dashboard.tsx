@@ -2,11 +2,14 @@ import { ArrowDownLeft, ArrowUpRight, Brain, Receipt, Sparkles, Target, Wallet }
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useCategories } from '../api/hooks/use-categories';
-import { useDashboardSummary, useSpendingByCategory } from '../api/hooks/use-dashboard';
+import { useCashflow, useDashboardSummary, useSpendingByCategory } from '../api/hooks/use-dashboard';
 import { useGoals } from '../api/hooks/use-goals';
 import { useTransactions } from '../api/hooks/use-transactions';
 import { useWallets } from '../api/hooks/use-wallets';
+import { CashflowChart } from '../components/finance/CashflowChart';
 import { EmptyState } from '../components/finance/EmptyState';
+import { MoneyQuote } from '../components/finance/MoneyQuote';
+import { SpendingDonut } from '../components/finance/SpendingDonut';
 import { StatCard } from '../components/finance/StatCard';
 import { TransactionRow } from '../components/finance/TransactionRow';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -21,6 +24,7 @@ export function Dashboard() {
   const summary = useDashboardSummary();
   const recent = useTransactions({ limit: 5 });
   const spending = useSpendingByCategory();
+  const cashflow = useCashflow(6);
   const goals = useGoals('active');
   const wallets = useWallets();
   const categories = useCategories();
@@ -42,6 +46,8 @@ export function Dashboard() {
         description="Your aggregate balance, recent activity and goal progress at a glance."
         actions={<AddTransactionDialog />}
       />
+
+      <MoneyQuote />
 
       <section className="grid gap-4 sm:grid-cols-3">
         <StatCard
@@ -66,6 +72,26 @@ export function Dashboard() {
           value={summary.data ? formatMoney(summary.data.expense.month) : undefined}
         />
       </section>
+
+      <SectionCard
+        eyebrow="Trend"
+        title="Income vs spending"
+        action={<span className="text-xs text-ink-3">Last 6 months</span>}
+      >
+        {cashflow.isLoading ? (
+          <Centered>
+            <Spinner size={22} label="Loading cashflow" />
+          </Centered>
+        ) : cashflow.data && cashflow.data.months.length > 0 ? (
+          <CashflowChart months={cashflow.data.months} />
+        ) : (
+          <EmptyState
+            icon={ArrowUpRight}
+            title="No cashflow yet"
+            description="Log income and expenses and your monthly trend will appear here."
+          />
+        )}
+      </SectionCard>
 
       <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-6">
@@ -116,22 +142,7 @@ export function Dashboard() {
                 <Spinner size={22} label="Loading spending" />
               </Centered>
             ) : spending.data && spending.data.categories.length > 0 ? (
-              <div className="space-y-3">
-                {spending.data.categories.slice(0, 6).map((c) => (
-                  <div key={c.categoryId ?? 'uncategorised'} className="space-y-1">
-                    <div className="flex items-center justify-between gap-2 text-sm">
-                      <span className="text-ink">{c.name}</span>
-                      <span className="num font-medium text-ink">{formatMoney(c.amount)}</span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-pill bg-surface-2" aria-hidden="true">
-                      <div
-                        className="h-full rounded-pill bg-primary"
-                        style={{ width: `${c.percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <SpendingDonut categories={spending.data.categories.slice(0, 8)} />
             ) : (
               <EmptyState
                 icon={Sparkles}
