@@ -26,6 +26,16 @@ export async function get(req: Request, res: Response): Promise<void> {
   res.json({ transaction });
 }
 
+export async function update(req: Request, res: Response): Promise<void> {
+  const transactionId = req.params.transactionId as string;
+  const transaction = await txnService.updateTransaction(
+    req.user!.id,
+    transactionId,
+    req.body,
+  );
+  res.json({ transaction });
+}
+
 export async function remove(req: Request, res: Response): Promise<void> {
   const transactionId = req.params.transactionId as string;
   const transaction = await txnService.deleteTransaction(req.user!.id, transactionId);

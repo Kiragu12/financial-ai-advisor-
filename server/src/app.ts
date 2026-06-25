@@ -13,7 +13,9 @@ import { categoriesRouter } from './modules/categories/categories.routes.js';
 import { transactionsRouter } from './modules/transactions/transactions.routes.js';
 import { transfersRouter } from './modules/transfers/transfers.routes.js';
 import { goalsRouter } from './modules/goals/goals.routes.js';
+import { budgetsRouter } from './modules/budgets/budgets.routes.js';
 import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
+import { gamificationRouter } from './modules/gamification/gamification.routes.js';
 import { advisorRouter } from './modules/advisor/advisor.routes.js';
 
 export function createApp() {
@@ -46,7 +48,9 @@ export function createApp() {
   app.use('/api/transactions', transactionsRouter);
   app.use('/api/transfers', transfersRouter);
   app.use('/api/goals', goalsRouter);
+  app.use('/api/budgets', budgetsRouter);
   app.use('/api/dashboard', dashboardRouter);
+  app.use('/api/gamification', gamificationRouter);
   app.use('/api/advisor', advisorRouter);
 
   app.use((_req, res) => {

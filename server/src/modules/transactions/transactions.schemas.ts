@@ -18,6 +18,24 @@ export const createTransactionSchema = z.object({
   transactionDate: isoDateString.optional(), // defaults to today in the service
 });
 
+/**
+ * Editing a transaction. Every field is optional (PATCH semantics) but at least
+ * one must be present. `categoryId` and `description` accept null to clear them.
+ * Only income/expense are editable — transfer legs are rejected in the service.
+ */
+export const updateTransactionSchema = z
+  .object({
+    walletId: z.string().uuid('Invalid wallet id').optional(),
+    type: z.enum(['income', 'expense']).optional(),
+    amount: positiveAmount.optional(),
+    categoryId: z.string().uuid('Invalid category id').nullable().optional(),
+    description: z.string().trim().max(500).nullable().optional(),
+    transactionDate: isoDateString.optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: 'Provide at least one field to update.',
+  });
+
 export const transactionIdParamSchema = z.object({
   transactionId: z.string().uuid('Invalid transaction id'),
 });
@@ -38,4 +56,5 @@ export const listTransactionsQuerySchema = z.object({
 });
 
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
+export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;
 export type ListTransactionsQuery = z.infer<typeof listTransactionsQuerySchema>;

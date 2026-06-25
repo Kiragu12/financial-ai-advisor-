@@ -135,6 +135,67 @@ export async function findByUser(
   return rows;
 }
 
+export interface UpdateTransactionFields {
+  walletId?: string;
+  type?: 'income' | 'expense';
+  amount?: number;
+  categoryId?: string | null;
+  description?: string | null;
+  transactionDate?: string;
+}
+
+/**
+ * Update an existing (non-deleted) transaction's columns. Column names come from
+ * a fixed allowlist; every value is parameterised. Runs on the caller's
+ * Queryable so it participates in the surrounding balance-adjustment transaction.
+ */
+export async function update(
+  db: Queryable,
+  userId: string,
+  transactionId: string,
+  fields: UpdateTransactionFields,
+): Promise<TransactionRecord | null> {
+  const sets: string[] = [];
+  const values: unknown[] = [];
+  let i = 1;
+
+  if (fields.walletId !== undefined) {
+    sets.push(`wallet_id = $${i++}`);
+    values.push(fields.walletId);
+  }
+  if (fields.type !== undefined) {
+    sets.push(`type = $${i++}`);
+    values.push(fields.type);
+  }
+  if (fields.amount !== undefined) {
+    sets.push(`amount = $${i++}`);
+    values.push(fields.amount);
+  }
+  if (fields.categoryId !== undefined) {
+    sets.push(`category_id = $${i++}`);
+    values.push(fields.categoryId);
+  }
+  if (fields.description !== undefined) {
+    sets.push(`description = $${i++}`);
+    values.push(fields.description);
+  }
+  if (fields.transactionDate !== undefined) {
+    sets.push(`transaction_date = $${i++}`);
+    values.push(fields.transactionDate);
+  }
+
+  sets.push(`updated_at = now()`);
+  values.push(transactionId, userId);
+
+  const { rows } = await db.query<TransactionRecord>(
+    `update transactions set ${sets.join(', ')}
+     where id = $${i++} and user_id = $${i} and deleted_at is null
+     returning *`,
+    values,
+  );
+  return rows[0] ?? null;
+}
+
 export async function softDelete(
   db: Queryable,
   userId: string,
