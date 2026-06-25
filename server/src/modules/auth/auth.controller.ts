@@ -12,6 +12,7 @@ import * as authService from './auth.services.js';
 // keeps the cookie; the token itself also carries its own expiry.
 const COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
+
 function authCookieOptions(): CookieOptions {
   return {
     httpOnly: true, // not readable by document.cookie
