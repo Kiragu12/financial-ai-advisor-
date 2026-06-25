@@ -33,6 +33,11 @@ export const queryKeys = {
     list: (type?: CategoryType) => ['categories', type ?? 'all'] as const,
   },
 
+  budgets: {
+    all: ['budgets'] as const,
+    list: (month?: string) => ['budgets', month ?? 'current'] as const,
+  },
+
   transactions: {
     all: ['transactions'] as const,
     list: (filters: TransactionFiltersKey) => ['transactions', filters] as const,
@@ -48,6 +53,11 @@ export const queryKeys = {
     summary: ['dashboard', 'summary'] as const,
     spending: ['dashboard', 'spending'] as const,
     cashflow: (months: number) => ['dashboard', 'cashflow', months] as const,
+  },
+
+  gamification: {
+    all: ['gamification'] as const,
+    summary: ['gamification', 'summary'] as const,
   },
 
   advisor: {

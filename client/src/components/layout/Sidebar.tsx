@@ -1,5 +1,6 @@
 import {
   Bot,
+  Gauge,
   LayoutDashboard,
   PiggyBank,
   Receipt,
@@ -21,6 +22,7 @@ const navItems: NavItem[] = [
   { to: '/wallets', label: 'Wallets', icon: Wallet },
   { to: '/transactions', label: 'Transactions', icon: Receipt },
   { to: '/goals', label: 'Goals', icon: Target },
+  { to: '/budgets', label: 'Budgets', icon: Gauge },
   { to: '/advisor', label: 'Advisor', icon: Bot },
 ];
 
@@ -73,7 +75,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
       </nav>
 
       <div className="border-t border-line px-5 py-4 text-xs text-ink-3">
-        <p>Beta · Built in Nairobi</p>
+        <p>Akiba Finance Tracker</p>
       </div>
     </aside>
   );

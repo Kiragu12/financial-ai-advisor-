@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight, Receipt, Search } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Pencil, Receipt, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useCategories } from '../api/hooks/use-categories';
 import { useDashboardSummary } from '../api/hooks/use-dashboard';
@@ -9,6 +9,7 @@ import { StatCard } from '../components/finance/StatCard';
 import { TransactionRow } from '../components/finance/TransactionRow';
 import { PageHeader } from '../components/layout/PageHeader';
 import { Alert } from '../components/ui/alert';
+import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Field } from '../components/ui/field';
 import { Input } from '../components/ui/input';
@@ -17,6 +18,7 @@ import { Spinner } from '../components/ui/spinner';
 import { formatMoney } from '../lib/money';
 import { TRANSACTION_TYPE_LABEL, directionOf } from '../lib/transaction';
 import { AddTransactionDialog } from '../features/transactions/AddTransactionDialog';
+import { EditTransactionDialog } from '../features/transactions/EditTransactionDialog';
 import { TransferDialog } from '../features/transfers/TransferDialog';
 
 export function Transactions() {
@@ -142,6 +144,19 @@ export function Transactions() {
                 category={t.categoryId ? categoryName.get(t.categoryId) : undefined}
                 amount={t.amount}
                 direction={directionOf(t.type)}
+                action={
+                  // Only plain income/expense are editable — transfer legs aren't.
+                  t.transferId === null ? (
+                    <EditTransactionDialog
+                      transaction={t}
+                      trigger={
+                        <Button variant="ghost" size="icon" aria-label="Edit transaction">
+                          <Pencil size={15} />
+                        </Button>
+                      }
+                    />
+                  ) : undefined
+                }
               />
             ))}
           </div>

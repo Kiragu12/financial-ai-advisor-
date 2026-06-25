@@ -1,9 +1,10 @@
-import { ArrowDownLeft, ArrowUpRight, Brain, Receipt, Sparkles, Target, Wallet } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Brain, Flame, Receipt, Sparkles, Target, Wallet } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useCategories } from '../api/hooks/use-categories';
 import { useCashflow, useDashboardSummary, useSpendingByCategory } from '../api/hooks/use-dashboard';
 import { useGoals } from '../api/hooks/use-goals';
+import { useGamificationSummary } from '../api/hooks/use-gamification';
 import { useTransactions } from '../api/hooks/use-transactions';
 import { useWallets } from '../api/hooks/use-wallets';
 import { CashflowChart } from '../components/finance/CashflowChart';
@@ -26,6 +27,7 @@ export function Dashboard() {
   const spending = useSpendingByCategory();
   const cashflow = useCashflow(6);
   const goals = useGoals('active');
+  const gamification = useGamificationSummary();
   const wallets = useWallets();
   const categories = useCategories();
 
@@ -49,7 +51,7 @@ export function Dashboard() {
 
       <MoneyQuote />
 
-      <section className="grid gap-4 sm:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Aggregate balance"
           icon={Wallet}
@@ -70,6 +72,22 @@ export function Dashboard() {
           tint="amber"
           loading={summary.isLoading}
           value={summary.data ? formatMoney(summary.data.expense.month) : undefined}
+        />
+        <StatCard
+          label="Tracking streak"
+          icon={Flame}
+          tint="red"
+          loading={gamification.isLoading}
+          value={
+            gamification.data
+              ? `${gamification.data.currentStreak} day${gamification.data.currentStreak === 1 ? '' : 's'}`
+              : undefined
+          }
+          hint={
+            gamification.data
+              ? `Best ${gamification.data.longestStreak} · ${gamification.data.activeDaysThisMonth} active this month`
+              : undefined
+          }
         />
       </section>
 

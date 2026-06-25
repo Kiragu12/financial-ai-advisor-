@@ -1,6 +1,5 @@
 import { Plus } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
-import { useCategories } from '../../api/hooks/use-categories';
 import { useCreateTransaction } from '../../api/hooks/use-transactions';
 import { useWallets } from '../../api/hooks/use-wallets';
 import { MoneyInput } from '../../components/finance/MoneyInput';
@@ -17,6 +16,7 @@ import { ErrorText, Field, HelperText } from '../../components/ui/field';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { todayIso } from '../../lib/date';
+import { CategoryPicker } from '../categories/CategoryPicker';
 
 type Direction = 'expense' | 'income';
 
@@ -39,7 +39,6 @@ export function AddTransactionDialog({
   const [amountError, setAmountError] = useState<string | null>(null);
 
   const { data: wallets = [] } = useWallets();
-  const { data: categories = [] } = useCategories(direction);
   const createTransaction = useCreateTransaction();
 
   // Default to the first wallet until the user picks one.
@@ -162,22 +161,12 @@ export function AddTransactionDialog({
             ) : null}
           </Field>
 
-          <Field>
-            <Label htmlFor="tx-category">Category (optional)</Label>
-            <select
-              id="tx-category"
-              className="input"
-              value={categoryId}
-              onChange={(event) => setCategoryId(event.target.value)}
-            >
-              <option value="">Uncategorised</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <CategoryPicker
+            id="tx-category"
+            type={direction}
+            value={categoryId}
+            onChange={setCategoryId}
+          />
 
           <Field>
             <Label htmlFor="tx-date">Date</Label>

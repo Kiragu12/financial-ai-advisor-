@@ -19,6 +19,7 @@ const Transactions = lazy(() =>
   import('../pages/Transactions').then((m) => ({ default: m.Transactions })),
 );
 const Goals = lazy(() => import('../pages/Goals').then((m) => ({ default: m.Goals })));
+const Budgets = lazy(() => import('../pages/Budgets').then((m) => ({ default: m.Budgets })));
 const Advisor = lazy(() => import('../pages/Advisor').then((m) => ({ default: m.Advisor })));
 
 // Sandbox is a dev-only design reference — keep it out of production bundles.
@@ -62,6 +63,7 @@ export function App() {
                     <Route path="/wallets" element={<Wallets />} />
                     <Route path="/transactions" element={<Transactions />} />
                     <Route path="/goals" element={<Goals />} />
+                    <Route path="/budgets" element={<Budgets />} />
                     <Route path="/advisor" element={<Advisor />} />
                   </Route>
                 </Route>

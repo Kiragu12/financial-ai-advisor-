@@ -61,11 +61,13 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => api.post<void>('/api/auth/logout'),
     onSuccess: () => {
-      // Drop all cached user data so a different account can't see the previous
-      // one's wallets/transactions, then re-seed ['me'] as null (fresh, so the
-      // active observer marks us unauthenticated without an extra /me round-trip).
-      qc.removeQueries();
+      // Mark us logged out first…
       qc.setQueryData(queryKeys.me, null);
+      // …then drop every OTHER cache (a different account mustn't see the
+      // previous one's data). Crucially we do NOT remove the ['me'] query:
+      // removing it while AuthProvider observes it would trigger an immediate
+      // /me refetch that can race the cookie deletion and resurrect the session.
+      qc.removeQueries({ predicate: (query) => query.queryKey[0] !== 'me' });
     },
   });
 }

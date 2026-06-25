@@ -26,9 +26,9 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
 
   function handleLogout() {
     logout.mutate(undefined, {
-      // Navigate regardless — even if the network call fails, the local session
-      // cache has been cleared, so send the user to the login screen.
-      onSettled: () => navigate('/login', { replace: true }),
+      // After logging out, return to the public home page. Seeing account
+      // details again requires logging back in.
+      onSettled: () => navigate('/', { replace: true }),
     });
   }
 

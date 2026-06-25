@@ -14,6 +14,8 @@ interface TransactionRowProps {
   /** Numeric amount from the backend. */
   amount: number;
   direction: Direction;
+  /** Optional control shown on the right (e.g. an edit button). */
+  action?: ReactNode;
   className?: string;
 }
 
@@ -24,6 +26,7 @@ function TransactionRowImpl({
   wallet,
   amount,
   direction,
+  action,
   className,
 }: TransactionRowProps) {
   const isIncome = direction === 'income';
@@ -47,15 +50,18 @@ function TransactionRowImpl({
           {category ? <Badge variant={isIncome ? 'income' : 'default'}>{category}</Badge> : null}
         </div>
       </div>
-      <p
-        className={cn(
-          'num shrink-0 text-sm font-semibold tabular-nums',
-          isIncome ? 'text-income' : 'text-expense',
-        )}
-      >
-        {isIncome ? '+' : '−'}
-        {formatMoney(amount)}
-      </p>
+      <div className="flex shrink-0 items-center gap-2">
+        <p
+          className={cn(
+            'num text-sm font-semibold tabular-nums',
+            isIncome ? 'text-income' : 'text-expense',
+          )}
+        >
+          {isIncome ? '+' : '−'}
+          {formatMoney(amount)}
+        </p>
+        {action}
+      </div>
     </div>
   );
 }

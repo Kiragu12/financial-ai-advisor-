@@ -48,6 +48,8 @@ function invalidateMoneyViews(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: queryKeys.transactions.all });
   qc.invalidateQueries({ queryKey: queryKeys.wallets.all });
   qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+  qc.invalidateQueries({ queryKey: queryKeys.budgets.all });
+  qc.invalidateQueries({ queryKey: queryKeys.gamification.all });
 }
 
 export function useCreateTransaction() {
@@ -55,6 +57,25 @@ export function useCreateTransaction() {
   return useMutation({
     mutationFn: (body: CreateTransactionInput) =>
       api.post<TransactionResponse>('/api/transactions', body),
+    onSuccess: () => invalidateMoneyViews(qc),
+  });
+}
+
+export interface UpdateTransactionInput {
+  transactionId: string;
+  walletId?: string;
+  type?: 'income' | 'expense';
+  amount?: number;
+  categoryId?: string | null; // null clears the category
+  description?: string | null;
+  transactionDate?: string;
+}
+
+export function useUpdateTransaction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ transactionId, ...body }: UpdateTransactionInput) =>
+      api.patch<TransactionResponse>(`/api/transactions/${transactionId}`, body),
     onSuccess: () => invalidateMoneyViews(qc),
   });
 }

@@ -58,6 +58,22 @@ export type Category = {
   isCustom: boolean;
 };
 export type CategoriesResponse = { categories: Category[] };
+export type CategoryResponse = { category: Category };
+
+// --- Budgets ---
+export type Budget = {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  amount: number;
+  spent: number;
+  remaining: number;
+  percentage: number;
+  createdAt: string;
+  updatedAt: string;
+};
+export type BudgetsResponse = { budgets: Budget[] };
+export type BudgetResponse = { budget: Budget };
 
 // --- Transactions ---
 export type TransactionType = 'income' | 'expense' | 'transfer_in' | 'transfer_out';
@@ -141,6 +157,15 @@ export type SpendingByCategory = {
 };
 export type CashflowMonth = { month: string; income: number; expense: number; net: number };
 export type Cashflow = { months: CashflowMonth[] };
+
+// --- Gamification ---
+export type GamificationSummary = {
+  currentStreak: number;
+  longestStreak: number;
+  activeDaysThisMonth: number;
+  lastActiveDate: string | null;
+};
+export type GamificationSummaryResponse = { summary: GamificationSummary };
 
 // --- Advisor ---
 export type AdvisorRole = 'user' | 'assistant' | 'system';
