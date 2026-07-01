@@ -1,5 +1,5 @@
 export interface ActivityDayRecord {
-  activity_date: Date;
+  activity_date: Date | string;
 }
 
 export interface GamificationSummary {

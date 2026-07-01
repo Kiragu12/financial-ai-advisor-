@@ -1,4 +1,4 @@
-import { Brain, MessageSquarePlus, Send, Sparkles } from 'lucide-react';
+import { Brain, Send, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   useConversation,
@@ -47,6 +47,10 @@ export function Advisor() {
     setDraft('');
     try {
       let id = selectedId;
+      if (!id && conversations.data?.[0]) {
+        id = conversations.data[0].id;
+        setSelectedId(id);
+      }
       if (!id) {
         const { conversation: created } = await createConversation.mutateAsync({});
         id = created.id;
@@ -59,12 +63,6 @@ export function Advisor() {
     }
   }
 
-  function startNewChat() {
-    setSelectedId(null);
-    setDraft('');
-    setError(null);
-  }
-
   const messages = conversation.data?.messages ?? [];
   const showThread = selectedId !== null && messages.length > 0;
 
@@ -74,11 +72,6 @@ export function Advisor() {
         eyebrow="AI"
         title="Advisor"
         description="Friendly, judgement-free nudges. Ask about your budget, your goals or last month's spending."
-        actions={
-          <Button variant="ghost" leftIcon={<MessageSquarePlus size={16} />} onClick={startNewChat}>
-            New chat
-          </Button>
-        }
       />
 
       <Alert variant="info" title="Educational, not regulated financial advice">
@@ -169,7 +162,7 @@ export function Advisor() {
             variant="primary"
             leftIcon={<Send size={14} />}
             loading={sendMessage.isPending || createConversation.isPending}
-            disabled={draft.trim() === ''}
+            disabled={draft.trim() === '' || conversations.isLoading}
           >
             Send
           </Button>

@@ -1,4 +1,12 @@
-import { Banknote, Landmark, PiggyBank, Smartphone, Trash2, Wallet } from 'lucide-react';
+import {
+  Banknote,
+  Landmark,
+  Pencil,
+  PiggyBank,
+  Smartphone,
+  Trash2,
+  Wallet,
+} from 'lucide-react';
 import { type LucideIcon } from 'lucide-react';
 import { useDashboardSummary } from '../api/hooks/use-dashboard';
 import { useDeleteWallet, useWallets } from '../api/hooks/use-wallets';
@@ -12,6 +20,7 @@ import { Button } from '../components/ui/button';
 import { Spinner } from '../components/ui/spinner';
 import { formatMoney } from '../lib/money';
 import { AddWalletDialog } from '../features/wallets/AddWalletDialog';
+import { EditWalletDialog } from '../features/wallets/EditWalletDialog';
 
 type Tint = 'green' | 'emerald' | 'blue' | 'violet' | 'amber' | 'teal';
 
@@ -83,14 +92,28 @@ export function Wallets() {
                 tint={meta.tint}
                 icon={meta.icon}
                 action={
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Deactivate ${wallet.name}`}
-                    onClick={() => handleDeactivate(wallet.id, wallet.name)}
-                  >
-                    <Trash2 size={16} />
-                  </Button>
+                  <div className="flex gap-1">
+                    <EditWalletDialog
+                      wallet={wallet}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Edit ${wallet.name}`}
+                        >
+                          <Pencil size={16} />
+                        </Button>
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Deactivate ${wallet.name}`}
+                      onClick={() => handleDeactivate(wallet.id, wallet.name)}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </div>
                 }
               />
             );

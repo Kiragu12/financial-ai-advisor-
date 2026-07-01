@@ -1,8 +1,15 @@
-import { ArrowDownLeft, ArrowUpRight, Pencil, Receipt, Search } from 'lucide-react';
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Download,
+  Pencil,
+  Receipt,
+  Search,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useCategories } from '../api/hooks/use-categories';
 import { useDashboardSummary } from '../api/hooks/use-dashboard';
-import { useTransactions } from '../api/hooks/use-transactions';
+import { useExportTransactions, useTransactions } from '../api/hooks/use-transactions';
 import { useWallets } from '../api/hooks/use-wallets';
 import { EmptyState } from '../components/finance/EmptyState';
 import { StatCard } from '../components/finance/StatCard';
@@ -29,6 +36,7 @@ export function Transactions() {
   const wallets = useWallets();
   const categories = useCategories();
   const summary = useDashboardSummary();
+  const exportTransactions = useExportTransactions();
 
   const walletName = useMemo(
     () => new Map((wallets.data ?? []).map((w) => [w.id, w.name])),
@@ -56,6 +64,10 @@ export function Transactions() {
     });
   }, [transactions.data, query, walletFilter, categoryName]);
 
+  function handleExport() {
+    exportTransactions.mutate(walletFilter === 'all' ? {} : { walletId: walletFilter });
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -64,6 +76,14 @@ export function Transactions() {
         description="Every income and expense across your wallets. Search, filter and log a new entry in seconds."
         actions={
           <div className="flex gap-2">
+            <Button
+              variant="default"
+              leftIcon={<Download size={16} />}
+              loading={exportTransactions.isPending}
+              onClick={handleExport}
+            >
+              Export
+            </Button>
             <TransferDialog />
             <AddTransactionDialog />
           </div>
@@ -86,6 +106,14 @@ export function Transactions() {
           value={summary.data ? formatMoney(summary.data.expense.month) : undefined}
         />
       </section>
+
+      {exportTransactions.isError ? (
+        <Alert variant="error" title="Could not export transactions">
+          {exportTransactions.error instanceof Error
+            ? exportTransactions.error.message
+            : 'Please try again.'}
+        </Alert>
+      ) : null}
 
       <Card className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">

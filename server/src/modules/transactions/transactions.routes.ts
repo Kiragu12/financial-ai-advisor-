@@ -25,6 +25,8 @@ transactionsRouter.use(requireAuth);
 
 transactionsRouter.get('/', asyncHandler(txnController.list));
 
+transactionsRouter.get('/export.xlsx', asyncHandler(txnController.exportExcel));
+
 transactionsRouter.post(
   '/',
   validate({ body: createTransactionSchema }),

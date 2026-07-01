@@ -15,14 +15,7 @@ import {
 import { ErrorText, Field, HelperText } from '../../components/ui/field';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
-
-// Values match the backend wallet type enum.
-const WALLET_TYPES: { value: WalletType; label: string }[] = [
-  { value: 'mobile_money', label: 'M-Pesa / Mobile money' },
-  { value: 'bank', label: 'Bank account' },
-  { value: 'cash', label: 'Cash' },
-  { value: 'savings', label: 'Savings' },
-];
+import { WALLET_TYPES } from './wallet-options';
 
 interface AddWalletDialogProps {
   trigger?: ReactNode;

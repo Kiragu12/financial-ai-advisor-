@@ -111,8 +111,8 @@ Use this checklist before starting non-trivial tasks in this repository.
 - [x] Implement wallet balance impact rules atomically.
 - [x] Build transaction entry and history screens as backend-ready empty states.
 - [x] Test transaction validation, ownership, balance math, rollback, and soft-delete reversal.
-- [ ] Wire transaction frontend screens to backend transaction APIs.
-- [ ] Implement transaction edit flow in a later sprint.
+- [x] Wire transaction frontend screens to backend transaction APIs.
+- [x] Implement transaction edit flow (PATCH /api/transactions/:id): atomic balance re-adjustment — same-wallet net change, or deadlock-safe dual-wallet move when the wallet changes; category/type validation; transfer-leg + negative-balance guards. Verified live. Frontend: EditTransactionDialog + per-row edit button.
 
 ### Phase 5: Wallet Transfers
 

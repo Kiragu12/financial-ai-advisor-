@@ -9,11 +9,6 @@ import type {
   GoalStatus,
 } from '../types';
 
-/**
- * Goal data hooks. A wallet-funded contribution moves a wallet balance and
- * writes a transaction, so contribute invalidates wallets/transactions/dashboard
- * in addition to goals.
- */
 
 /** @deprecated Use queryKeys.goals.all — kept for one release. */
 export const GOALS_KEY = queryKeys.goals.all;

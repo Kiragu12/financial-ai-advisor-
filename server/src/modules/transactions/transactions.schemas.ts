@@ -45,16 +45,22 @@ export const transactionIdParamSchema = z.object({
  * controller (Express 5 makes req.query read-only, so we don't mutate it).
  * z.coerce turns the always-string query values into numbers where needed.
  */
-export const listTransactionsQuerySchema = z.object({
+const transactionFiltersSchema = z.object({
   walletId: z.string().uuid().optional(),
   categoryId: z.string().uuid().optional(),
   type: z.enum(['income', 'expense', 'transfer_in', 'transfer_out']).optional(),
   from: isoDateString.optional(),
   to: isoDateString.optional(),
+});
+
+export const listTransactionsQuerySchema = transactionFiltersSchema.extend({
   limit: z.coerce.number().int().min(1).max(100).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
 
+export const exportTransactionsQuerySchema = transactionFiltersSchema;
+
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
 export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;
 export type ListTransactionsQuery = z.infer<typeof listTransactionsQuerySchema>;
+export type ExportTransactionsQuery = z.infer<typeof exportTransactionsQuerySchema>;

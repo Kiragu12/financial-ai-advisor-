@@ -1,6 +1,9 @@
 import type { Request, Response } from 'express';
 import * as txnService from './transactions.service.js';
-import { listTransactionsQuerySchema } from './transactions.schemas.js';
+import {
+  exportTransactionsQuerySchema,
+  listTransactionsQuerySchema,
+} from './transactions.schemas.js';
 
 /**
  * HTTP layer for transactions. requireAuth runs first (see routes), so
@@ -18,6 +21,23 @@ export async function list(req: Request, res: Response): Promise<void> {
   const filters = listTransactionsQuerySchema.parse(req.query);
   const transactions = await txnService.listTransactions(req.user!.id, filters);
   res.json({ transactions });
+}
+
+export async function exportExcel(req: Request, res: Response): Promise<void> {
+  const filters = exportTransactionsQuerySchema.parse(req.query);
+  const workbook = await txnService.exportTransactionsWorkbook(req.user!.id, filters);
+  const date = new Date().toISOString().slice(0, 10);
+
+  res.setHeader(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  );
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="akiba-transactions-${date}.xlsx"`,
+  );
+  res.setHeader('Content-Length', String(workbook.length));
+  res.send(workbook);
 }
 
 export async function get(req: Request, res: Response): Promise<void> {

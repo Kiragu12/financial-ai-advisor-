@@ -27,6 +27,11 @@ export async function createConversation(
   userId: string,
   input: CreateConversationInput,
 ): Promise<Conversation> {
+  const existing = await advisorRepo.findConversations(userId);
+  if (existing.length > 0) {
+    return toConversation(existing[0]!);
+  }
+
   const record = await advisorRepo.insertConversation(
     userId,
     input.title ?? DEFAULT_TITLE,

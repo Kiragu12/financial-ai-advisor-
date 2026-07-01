@@ -8,10 +8,6 @@ import type {
   SummaryResponse,
 } from '../types';
 
-/**
- * Read-only dashboard analytics. All three keys live under ['dashboard'] so the
- * money mutations elsewhere can invalidate the whole group with one call.
- */
 
 export function useDashboardSummary() {
   return useQuery({

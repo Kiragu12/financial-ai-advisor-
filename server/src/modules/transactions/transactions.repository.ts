@@ -1,6 +1,9 @@
 import { pool, query, type Queryable } from '../../db/database.js';
 import type { TransactionRecord } from './transactions.types.js';
-import type { ListTransactionsQuery } from './transactions.schemas.js';
+import type {
+  ExportTransactionsQuery,
+  ListTransactionsQuery,
+} from './transactions.schemas.js';
 
 /**
  * Transaction data access. Reads exclude soft-deleted rows (deleted_at is null).
@@ -94,42 +97,90 @@ export async function findByUser(
   userId: string,
   filters: ListTransactionsQuery,
 ): Promise<TransactionRecord[]> {
-  // Build the WHERE clause from a fixed set of optional filters. Column names
-  // are hard-coded; every value is parameterised.
-  const conditions = ['user_id = $1', 'deleted_at is null'];
+  const { conditions, values, nextIndex } = buildFilterConditions(userId, filters);
+
+  const limitPlaceholder = `$${nextIndex}`;
+  const offsetPlaceholder = `$${nextIndex + 1}`;
+  values.push(filters.limit, filters.offset);
+
+  const { rows } = await query<TransactionRecord>(
+    `select t.* from transactions t
+     where ${conditions.join(' and ')}
+     order by t.transaction_date desc, t.created_at desc
+     limit ${limitPlaceholder} offset ${offsetPlaceholder}`,
+    values,
+  );
+  return rows;
+}
+
+interface TransactionFilterInput {
+  walletId?: string;
+  categoryId?: string;
+  type?: string;
+  from?: string;
+  to?: string;
+}
+
+function buildFilterConditions(userId: string, filters: TransactionFilterInput) {
+  const conditions = ['t.user_id = $1', 't.deleted_at is null'];
   const values: unknown[] = [userId];
   let i = 2;
 
   if (filters.walletId) {
-    conditions.push(`wallet_id = $${i++}`);
+    conditions.push(`t.wallet_id = $${i++}`);
     values.push(filters.walletId);
   }
   if (filters.categoryId) {
-    conditions.push(`category_id = $${i++}`);
+    conditions.push(`t.category_id = $${i++}`);
     values.push(filters.categoryId);
   }
   if (filters.type) {
-    conditions.push(`type = $${i++}`);
+    conditions.push(`t.type = $${i++}`);
     values.push(filters.type);
   }
   if (filters.from) {
-    conditions.push(`transaction_date >= $${i++}`);
+    conditions.push(`t.transaction_date >= $${i++}`);
     values.push(filters.from);
   }
   if (filters.to) {
-    conditions.push(`transaction_date <= $${i++}`);
+    conditions.push(`t.transaction_date <= $${i++}`);
     values.push(filters.to);
   }
 
-  const limitPlaceholder = `$${i++}`;
-  const offsetPlaceholder = `$${i}`;
-  values.push(filters.limit, filters.offset);
+  return { conditions, values, nextIndex: i };
+}
 
-  const { rows } = await query<TransactionRecord>(
-    `select * from transactions
+export interface ExportTransactionRow {
+  id: string;
+  transaction_date: string;
+  type: TransactionRecord['type'];
+  amount: string;
+  description: string | null;
+  wallet_name: string;
+  category_name: string | null;
+  created_at: Date;
+}
+
+export async function findExportRows(
+  userId: string,
+  filters: ExportTransactionsQuery,
+): Promise<ExportTransactionRow[]> {
+  const { conditions, values } = buildFilterConditions(userId, filters);
+  const { rows } = await query<ExportTransactionRow>(
+    `select
+       t.id,
+       t.transaction_date,
+       t.type,
+       t.amount,
+       t.description,
+       w.name as wallet_name,
+       c.name as category_name,
+       t.created_at
+     from transactions t
+     inner join wallets w on w.id = t.wallet_id and w.user_id = t.user_id
+     left join categories c on c.id = t.category_id
      where ${conditions.join(' and ')}
-     order by transaction_date desc, created_at desc
-     limit ${limitPlaceholder} offset ${offsetPlaceholder}`,
+     order by t.transaction_date desc, t.created_at desc`,
     values,
   );
   return rows;

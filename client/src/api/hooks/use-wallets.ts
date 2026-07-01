@@ -28,11 +28,29 @@ export interface CreateWalletInput {
   openingBalance?: number;
 }
 
+export interface UpdateWalletInput {
+  walletId: string;
+  name?: string;
+  type?: WalletType;
+}
+
 export function useCreateWallet() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: CreateWalletInput) =>
       api.post<WalletResponse>('/api/wallets', body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.wallets.all });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+    },
+  });
+}
+
+export function useUpdateWallet() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ walletId, ...body }: UpdateWalletInput) =>
+      api.patch<WalletResponse>(`/api/wallets/${walletId}`, body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.wallets.all });
       qc.invalidateQueries({ queryKey: queryKeys.dashboard.all });

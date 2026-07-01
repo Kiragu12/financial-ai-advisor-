@@ -65,6 +65,41 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return parsed as T;
 }
 
+async function requestBlob(path: string, options: RequestOptions = {}): Promise<Blob> {
+  const { body, headers, ...rest } = options;
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...rest,
+    credentials: 'include',
+    headers: {
+      Accept:
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/json',
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...headers,
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    let parsed: unknown;
+    if (text) {
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        parsed = undefined;
+      }
+    }
+
+    throw new ApiError(
+      response.status,
+      parsed as ApiErrorBody | undefined,
+      `Request failed with ${response.status}`,
+    );
+  }
+
+  return response.blob();
+}
+
 export const api = {
   get: <T>(path: string, options?: RequestOptions) =>
     request<T>(path, { ...options, method: 'GET' }),
@@ -76,4 +111,6 @@ export const api = {
     request<T>(path, { ...options, method: 'PUT', body }),
   delete: <T>(path: string, options?: RequestOptions) =>
     request<T>(path, { ...options, method: 'DELETE' }),
+  download: (path: string, options?: RequestOptions) =>
+    requestBlob(path, { ...options, method: 'GET' }),
 };

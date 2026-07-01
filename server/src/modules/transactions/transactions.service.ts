@@ -1,3 +1,4 @@
+import ExcelJS from 'exceljs';
 import { withTransaction } from '../../db/database.js';
 import { AppError } from '../../shared/app-error.js';
 import * as walletRepo from '../wallets/wallets.repository.js';
@@ -12,6 +13,7 @@ import {
 import type { WalletRecord } from '../wallets/wallets.types.js';
 import type {
   CreateTransactionInput,
+  ExportTransactionsQuery,
   UpdateTransactionInput,
   ListTransactionsQuery,
 } from './transactions.schemas.js';
@@ -90,6 +92,61 @@ export async function listTransactions(
 ): Promise<Transaction[]> {
   const records = await txnRepo.findByUser(userId, filters);
   return records.map(toTransaction);
+}
+
+const TYPE_LABEL: Record<TransactionType, string> = {
+  income: 'Income',
+  expense: 'Expense',
+  transfer_in: 'Transfer in',
+  transfer_out: 'Transfer out',
+};
+
+function signedAmount(type: TransactionType, amount: string): number {
+  const value = Number(amount);
+  return type === 'income' || type === 'transfer_in' ? value : -value;
+}
+
+export async function exportTransactionsWorkbook(
+  userId: string,
+  filters: ExportTransactionsQuery,
+): Promise<Buffer> {
+  const rows = await txnRepo.findExportRows(userId, filters);
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Akiba Finance Tracker';
+  workbook.created = new Date();
+
+  const sheet = workbook.addWorksheet('Transactions');
+  sheet.columns = [
+    { header: 'Date', key: 'date', width: 14 },
+    { header: 'Type', key: 'type', width: 16 },
+    { header: 'Wallet', key: 'wallet', width: 24 },
+    { header: 'Category', key: 'category', width: 22 },
+    { header: 'Description', key: 'description', width: 38 },
+    { header: 'Amount', key: 'amount', width: 14 },
+    { header: 'Signed Amount', key: 'signedAmount', width: 16 },
+    { header: 'Created At', key: 'createdAt', width: 24 },
+  ];
+  sheet.views = [{ state: 'frozen', ySplit: 1 }];
+  sheet.getRow(1).font = { bold: true };
+
+  for (const row of rows) {
+    sheet.addRow({
+      date: row.transaction_date,
+      type: TYPE_LABEL[row.type],
+      wallet: row.wallet_name,
+      category: row.category_name ?? (row.type.startsWith('transfer') ? 'Transfer' : ''),
+      description: row.description ?? '',
+      amount: Number(row.amount),
+      signedAmount: signedAmount(row.type, row.amount),
+      createdAt: row.created_at.toISOString(),
+    });
+  }
+
+  sheet.getColumn('amount').numFmt = '#,##0.00';
+  sheet.getColumn('signedAmount').numFmt = '#,##0.00;[Red]-#,##0.00';
+
+  const output = await workbook.xlsx.writeBuffer();
+  return Buffer.from(output);
 }
 
 export async function getTransaction(
