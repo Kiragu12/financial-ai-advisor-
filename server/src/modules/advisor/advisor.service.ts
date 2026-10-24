@@ -14,10 +14,10 @@ import type { CreateConversationInput } from './advisor.schemas.js';
 /**
  * Advisor business logic — owns the chat flow:
  *   1. record the user's message context (history) and build a financial snapshot
- *   2. ask Claude for a reply
+ *   2. generate a reply in-process (advisor.client.ts — no external service)
  *   3. persist the user message + assistant reply together (atomic)
  *
- * The Claude call happens BEFORE the DB writes so a failed/timed-out request
+ * Reply generation happens BEFORE the DB writes so a failed request
  * leaves no orphaned user message — nothing is persisted unless we got a reply.
  */
 
@@ -75,8 +75,8 @@ export async function sendMessage(
     throw AppError.notFound('Conversation not found.');
   }
 
-  // Prior turns + the new user message form the prompt to Claude. Only
-  // user/assistant rows are sent (the system prompt is rebuilt fresh below).
+  // Prior turns + the new user message form the conversation history. Only
+  // user/assistant rows are used; the financial snapshot is rebuilt fresh below.
   const priorMessages = await advisorRepo.findMessages(userId, conversationId);
   const history = priorMessages
     .filter((m) => m.role === 'user' || m.role === 'assistant')

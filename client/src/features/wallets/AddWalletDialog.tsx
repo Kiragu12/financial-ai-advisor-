@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useCreateWallet } from '../../api/hooks/use-wallets';
-import type { WalletType } from '../../api/types';
+import type { Wallet, WalletType } from '../../api/types';
 import { MoneyInput } from '../../components/finance/MoneyInput';
 import { Alert } from '../../components/ui/alert';
 import { Button } from '../../components/ui/button';
@@ -19,9 +19,10 @@ import { WALLET_TYPES } from './wallet-options';
 
 interface AddWalletDialogProps {
   trigger?: ReactNode;
+  onCreated?: (wallet: Wallet) => void;
 }
 
-export function AddWalletDialog({ trigger }: AddWalletDialogProps) {
+export function AddWalletDialog({ trigger, onCreated }: AddWalletDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [type, setType] = useState<WalletType>('mobile_money');
@@ -56,7 +57,12 @@ export function AddWalletDialog({ trigger }: AddWalletDialogProps) {
         type,
         openingBalance: openingBalance.trim() === '' ? 0 : Number(openingBalance),
       },
-      { onSuccess: () => handleOpenChange(false) },
+      {
+        onSuccess: ({ wallet }) => {
+          onCreated?.(wallet);
+          handleOpenChange(false);
+        },
+      },
     );
   }
 

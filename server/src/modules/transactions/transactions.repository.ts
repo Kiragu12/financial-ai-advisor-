@@ -19,16 +19,24 @@ export interface InsertTransactionData {
   amount: number;
   description: string | null;
   transactionDate: string;
+  predictedCategoryId?: string | null;
+  predictionConfidence?: number | null;
 }
 
+/**
+ * user_corrected is derived in SQL: true when a prediction was recorded and the
+ * final category differs from it (including the user clearing the category).
+ */
 export async function insert(
   db: Queryable,
   data: InsertTransactionData,
 ): Promise<TransactionRecord> {
   const { rows } = await db.query<TransactionRecord>(
     `insert into transactions
-       (user_id, wallet_id, category_id, type, amount, description, transaction_date)
-     values ($1, $2, $3, $4, $5, $6, $7)
+       (user_id, wallet_id, category_id, type, amount, description, transaction_date,
+        predicted_category_id, prediction_confidence, user_corrected)
+     values ($1, $2, $3, $4, $5, $6, $7, $8::uuid, $9,
+             $8::uuid is not null and $8::uuid is distinct from $3::uuid)
      returning *`,
     [
       data.userId,
@@ -38,6 +46,8 @@ export async function insert(
       data.amount,
       data.description,
       data.transactionDate,
+      data.predictedCategoryId ?? null,
+      data.predictionConfidence ?? null,
     ],
   );
   return rows[0]!;
@@ -223,7 +233,11 @@ export async function update(
     values.push(fields.amount);
   }
   if (fields.categoryId !== undefined) {
-    sets.push(`category_id = $${i++}`);
+    // A later re-categorisation also counts as a correction of the prediction.
+    sets.push(`category_id = $${i}`);
+    sets.push(
+      `user_corrected = predicted_category_id is not null and predicted_category_id is distinct from $${i++}::uuid`,
+    );
     values.push(fields.categoryId);
   }
   if (fields.description !== undefined) {

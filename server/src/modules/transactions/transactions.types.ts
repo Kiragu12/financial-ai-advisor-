@@ -19,6 +19,11 @@ export interface TransactionRecord {
   description: string | null;
   transaction_date: string;
   transfer_id: string | null;
+  // Categoriser feedback (migration 009): what the model suggested and whether
+  // the user overrode it. Exported manually for the next training run.
+  predicted_category_id: string | null;
+  prediction_confidence: string | null;
+  user_corrected: boolean;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;

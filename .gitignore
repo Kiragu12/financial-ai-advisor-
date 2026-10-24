@@ -15,3 +15,8 @@ CLAUDE.md
 
 # Throwaway prototype extraction output (see scripts/extract-prototype.cjs)
 tmp/
+
+# ML workspace — virtualenv and regenerable binary artefacts
+ml/.venv/
+__pycache__/
+*.pkl

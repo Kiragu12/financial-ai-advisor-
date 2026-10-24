@@ -45,6 +45,26 @@ export async function findUsableById(
   return rows[0] ?? null;
 }
 
+/**
+ * Resolve expense category names (case-insensitive) to the categories this user
+ * would pick: their own custom category wins over the system default of the
+ * same name. Returns at most one row per name; unknown names are simply absent.
+ */
+export async function findUsableExpenseByNames(
+  userId: string,
+  names: string[],
+): Promise<CategoryRecord[]> {
+  const { rows } = await query<CategoryRecord>(
+    `select distinct on (lower(name)) * from categories
+     where type = 'expense'
+       and lower(name) = any($2::text[])
+       and (user_id is null or user_id = $1)
+     order by lower(name), user_id nulls last`,
+    [userId, names.map((name) => name.toLowerCase())],
+  );
+  return rows;
+}
+
 export async function insertCustom(
   userId: string,
   data: CreateCategoryInput,

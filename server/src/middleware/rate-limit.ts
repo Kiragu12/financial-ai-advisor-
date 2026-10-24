@@ -7,8 +7,9 @@ import rateLimit, { type Options } from 'express-rate-limit';
  *   - globalLimiter   broad ceiling on the whole API (app.ts)
  *   - authLimiter     tight ceiling on login/register (stops password guessing
  *                     and signup spam) — applied in auth.routes.ts
- *   - advisorLimiter  caps AI messages per window (each one costs real money on
- *                     the Claude API) — applied in advisor.routes.ts
+ *   - advisorLimiter  caps advisor messages per window (each one runs the
+ *                     insight engine over several aggregate queries) —
+ *                     applied in advisor.routes.ts
  *
  * All limiters emit the same error envelope the rest of the API uses, so the
  * client handles a 429 like any other error.

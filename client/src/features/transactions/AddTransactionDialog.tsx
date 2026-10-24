@@ -1,9 +1,11 @@
 import { Plus } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { useCategorySuggestion } from '../../api/hooks/use-categoriser';
 import { useCreateTransaction } from '../../api/hooks/use-transactions';
 import { useWallets } from '../../api/hooks/use-wallets';
 import { MoneyInput } from '../../components/finance/MoneyInput';
 import { Alert } from '../../components/ui/alert';
+import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import {
   Dialog,
@@ -17,6 +19,7 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { todayIso } from '../../lib/date';
 import { CategoryPicker } from '../categories/CategoryPicker';
+import { AddWalletDialog } from '../wallets/AddWalletDialog';
 
 type Direction = 'expense' | 'income';
 
@@ -34,6 +37,9 @@ export function AddTransactionDialog({
   const [amount, setAmount] = useState('');
   const [walletId, setWalletId] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  // Once the user picks a category themselves (even "Uncategorised"), the
+  // model's suggestion never overrides it.
+  const [categoryTouched, setCategoryTouched] = useState(false);
   const [note, setNote] = useState('');
   const [date, setDate] = useState(todayIso);
   const [amountError, setAmountError] = useState<string | null>(null);
@@ -44,11 +50,35 @@ export function AddTransactionDialog({
   // Default to the first wallet until the user picks one.
   const effectiveWalletId = walletId || wallets[0]?.id || '';
 
+  // The model only classifies expenses. A confident suggestion preselects the
+  // category; a weak one is offered as chips. No suggestion = today's form.
+  const suggestion = useCategorySuggestion(note, Number(amount), direction === 'expense');
+  const suggestionOpen = suggestion !== undefined && !categoryTouched;
+  const autoCategoryId =
+    suggestionOpen && suggestion.autoAssign ? suggestion.categoryId : null;
+  const effectiveCategoryId = categoryTouched ? categoryId : (autoCategoryId ?? '');
+  const suggestionChips =
+    suggestionOpen && !suggestion.autoAssign
+      ? suggestion.alternatives.filter((alt) => alt.categoryId !== null)
+      : [];
+
+  function chooseCategory(id: string) {
+    setCategoryId(id);
+    setCategoryTouched(true);
+  }
+
+  function changeDirection(next: Direction) {
+    setDirection(next);
+    setCategoryId('');
+    setCategoryTouched(false);
+  }
+
   function reset() {
     setDirection(defaultDirection);
     setAmount('');
     setWalletId('');
     setCategoryId('');
+    setCategoryTouched(false);
     setNote('');
     setDate(todayIso());
     setAmountError(null);
@@ -73,9 +103,11 @@ export function AddTransactionDialog({
         walletId: effectiveWalletId,
         type: direction,
         amount: Number(amount),
-        categoryId: categoryId || undefined,
+        categoryId: effectiveCategoryId || undefined,
         description: note.trim() || undefined,
         transactionDate: date,
+        predictedCategoryId: suggestion?.categoryId ?? undefined,
+        predictionConfidence: suggestion?.categoryId ? suggestion.confidence : undefined,
       },
       { onSuccess: () => handleOpenChange(false) },
     );
@@ -104,18 +136,12 @@ export function AddTransactionDialog({
             <div className="flex gap-2 rounded-card-sm border border-line bg-surface-2 p-1">
               <DirectionToggle
                 active={direction === 'expense'}
-                onClick={() => {
-                  setDirection('expense');
-                  setCategoryId('');
-                }}
+                onClick={() => changeDirection('expense')}
                 label="Expense"
               />
               <DirectionToggle
                 active={direction === 'income'}
-                onClick={() => {
-                  setDirection('income');
-                  setCategoryId('');
-                }}
+                onClick={() => changeDirection('income')}
                 label="Income"
               />
             </div>
@@ -138,7 +164,20 @@ export function AddTransactionDialog({
           </Field>
 
           <Field>
-            <Label htmlFor="tx-wallet">Wallet</Label>
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="tx-wallet">Wallet</Label>
+              <AddWalletDialog
+                onCreated={(wallet) => setWalletId(wallet.id)}
+                trigger={
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:shadow-ring rounded-card-sm"
+                  >
+                    + New wallet
+                  </button>
+                }
+              />
+            </div>
             <select
               id="tx-wallet"
               className="input"
@@ -157,16 +196,37 @@ export function AddTransactionDialog({
               )}
             </select>
             {noWallets ? (
-              <HelperText>You need at least one wallet before logging a transaction.</HelperText>
+              <HelperText>
+                You need at least one wallet before logging a transaction — tap “New wallet” above.
+              </HelperText>
             ) : null}
           </Field>
+
+          {suggestionChips.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-ink-3">Looks like:</span>
+              {suggestionChips.map((alt) => (
+                <button
+                  key={alt.category}
+                  type="button"
+                  className="rounded-full focus-visible:outline-none focus-visible:shadow-ring"
+                  onClick={() => chooseCategory(alt.categoryId!)}
+                >
+                  <Badge variant="primary">{alt.category}</Badge>
+                </button>
+              ))}
+            </div>
+          ) : null}
 
           <CategoryPicker
             id="tx-category"
             type={direction}
-            value={categoryId}
-            onChange={setCategoryId}
+            value={effectiveCategoryId}
+            onChange={chooseCategory}
           />
+          {autoCategoryId ? (
+            <HelperText className="-mt-3">Suggested — change if wrong</HelperText>
+          ) : null}
 
           <Field>
             <Label htmlFor="tx-date">Date</Label>

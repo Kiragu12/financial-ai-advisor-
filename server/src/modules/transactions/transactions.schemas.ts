@@ -16,6 +16,9 @@ export const createTransactionSchema = z.object({
   categoryId: z.string().uuid('Invalid category id').optional(),
   description: z.string().trim().max(500).optional(),
   transactionDate: isoDateString.optional(), // defaults to today in the service
+  // What the categoriser suggested, so we can record whether the user overrode it.
+  predictedCategoryId: z.string().uuid('Invalid category id').optional(),
+  predictionConfidence: z.number().min(0).max(1).optional(),
 });
 
 /**

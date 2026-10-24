@@ -2,9 +2,8 @@
  * AI advisor shapes.
  *
  * A conversation is a chat thread between the user and the advisor; messages are
- * its turns. `role` mirrors the Claude API roles: 'user' and 'assistant'
- * (we don't persist 'system' rows — the system prompt is rebuilt per request
- * from live financial data, see advisor.context.ts).
+ * its turns: 'user' and 'assistant'. ('system' is kept in the type for rows
+ * written by the earlier LLM-backed advisor; new replies never use it.)
  */
 
 export type MessageRole = 'user' | 'assistant' | 'system';

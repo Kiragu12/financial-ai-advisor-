@@ -46,8 +46,8 @@ Other scripts: `npm run build` (compile to `dist/`), `npm start` (run the build)
 | `JWT_SECRET` | **yes** | ≥ 32 random chars (`node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`) |
 | `JWT_EXPIRES_IN` | no | default `7d` |
 | `COOKIE_NAME` | no | default `akiba_token` |
-| `ANTHROPIC_API_KEY` | no* | required only for the AI advisor; server boots without it |
-| `ANTHROPIC_MODEL` | no | default `claude-opus-4-8`; use `claude-sonnet-4-6` / `claude-haiku-4-5` for lower cost |
+
+The advisor needs no API key — it runs entirely in-process with no outbound calls.
 
 Secrets live **only** in `.env` (gitignored). Never commit real values.
 
@@ -56,7 +56,7 @@ Secrets live **only** in `.env` (gitignored). Never commit real values.
 - **Auth** — stateless JWT in an HTTP-only, `sameSite=lax` cookie (`secure` in production). Passwords hashed with bcrypt (12 rounds).
 - **Ownership** — every repository query is filtered by `user_id` in SQL; cross-user access returns 404.
 - **Input validation** — Zod schemas on every body/param; parameterised SQL throughout (no string interpolation).
-- **Rate limiting** — global per-IP ceiling; tight limit on login/register (brute-force); per-minute cap on advisor messages (API-cost abuse).
+- **Rate limiting** — global per-IP ceiling; tight limit on login/register (brute-force); per-minute cap on advisor messages.
 - **Hardening** — `helmet` headers, CORS locked to an explicit origin with credentials, 100 KB JSON body limit, generic 500s (real errors logged server-side only), `trust proxy` in production.
 - **Money integrity** — every balance change is atomic (`withTransaction` + `SELECT … FOR UPDATE`), with multi-wallet locks acquired in sorted order to avoid deadlocks.
 

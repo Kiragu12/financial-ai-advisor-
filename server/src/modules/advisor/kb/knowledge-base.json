@@ -1,0 +1,296 @@
+[
+  {
+    "id": "greeting",
+    "question": "Hi, hello, hey",
+    "keywords": ["hi", "hello", "hey", "habari", "niaje", "sasa", "good morning", "good evening"],
+    "answer": "Hi! I'm Akiba, your money advisor. Ask me how much you've spent (\"how much did I spend on food this month?\"), for advice on your own numbers (\"how can I save more?\"), or about money basics (\"what is an emergency fund?\")."
+  },
+  {
+    "id": "thanks",
+    "question": "Thank you",
+    "keywords": ["thanks", "thank you", "asante", "appreciate", "helpful"],
+    "answer": "Karibu! Keep logging your transactions and I'll keep spotting patterns for you. Ask me again any time."
+  },
+  {
+    "id": "capabilities",
+    "question": "What can you do? How do you work? Are you an AI?",
+    "keywords": ["what can you do", "capabilities", "how do you work", "who are you", "ai", "chatbot", "features"],
+    "answer": "I read the transactions, budgets and goals you've logged and run them through a set of rules that spot spending spikes, overspending, savings rate and goal pace — every figure I quote comes from your own data. I also answer common money questions from a built-in guide. Everything runs inside Akiba: your data is never sent to an outside AI service."
+  },
+  {
+    "id": "privacy",
+    "question": "Is my data safe? Who sees my financial data?",
+    "keywords": ["privacy", "data safe", "secure", "who sees", "share my data", "confidential"],
+    "answer": "Your transactions stay in Akiba's own database and are only visible to your account. The advisor runs entirely on Akiba's server, so nothing you ask me is sent to a third-party AI service."
+  },
+  {
+    "id": "emergency-fund",
+    "question": "What is an emergency fund and how much should it be?",
+    "keywords": ["emergency fund", "rainy day", "emergency savings", "unexpected expenses", "safety net", "cushion"],
+    "answer": "An emergency fund is money set aside only for surprises — a medical bill, a lost phone, a late allowance. The usual target is three to six months of essential costs, but as a student start smaller: one month of rent, food and transport is a strong first milestone. Keep it somewhere you can reach quickly but won't dip into casually, separate from your spending wallet."
+  },
+  {
+    "id": "build-emergency-fund",
+    "question": "How do I start building an emergency fund on a small income?",
+    "keywords": ["start emergency fund", "build emergency fund", "small income", "begin saving"],
+    "answer": "Pick a fixed small amount — even KES 200 a week — and move it the day your income arrives, before you spend anything. Put it in a separate savings account or locked savings so it isn't mixed with daily money. Add any windfalls (gifts, refunds) to it until you hit your first target."
+  },
+  {
+    "id": "50-30-20",
+    "question": "What is the 50/30/20 budgeting rule?",
+    "keywords": ["50/30/20", "50 30 20", "budget rule", "needs wants savings split", "percentage budget"],
+    "answer": "50/30/20 splits your income into 50% for needs (rent, food, transport, fees), 30% for wants (outings, subscriptions, eating out) and 20% for savings. On a student income needs often take more than 50%, so treat it as a starting guide — even 70/20/10 is fine if you are saving something every month."
+  },
+  {
+    "id": "make-a-budget",
+    "question": "How do I make a budget?",
+    "keywords": ["make a budget", "create budget", "budgeting", "plan my money", "monthly plan"],
+    "answer": "List your monthly income first, then your fixed costs (rent, fees, data), then set limits for flexible categories like food, transport and entertainment. Whatever is left becomes savings — decide that amount up front rather than saving what's left over. In Akiba you can set a monthly budget per category and I'll warn you when one is exceeded."
+  },
+  {
+    "id": "weekly-budget",
+    "question": "Should I budget weekly or monthly?",
+    "keywords": ["weekly budget", "monthly budget", "allowance lasts", "run out of money", "end of month"],
+    "answer": "If your money tends to run out before the month ends, budget weekly: divide your flexible spending (food, transport, fun) by four and treat each week as a fresh limit. Fixed costs like rent still get paid monthly. A weekly limit makes overspending visible early, while there is still time to adjust."
+  },
+  {
+    "id": "save-student-income",
+    "question": "How can a student save money on a small income?",
+    "keywords": ["save money", "saving tips", "student saving", "save on allowance", "save more", "saving habit"],
+    "answer": "Save first, not last: move a fixed amount on the day your allowance or HELB arrives. Cut the small daily leaks — snacks, single-day data bundles, unplanned boda rides — which add up faster than big purchases. Track every expense for a month; most students find one category quietly taking far more than they thought."
+  },
+  {
+    "id": "pay-yourself-first",
+    "question": "What does pay yourself first mean?",
+    "keywords": ["pay yourself first", "save first", "automatic saving", "standing order"],
+    "answer": "Paying yourself first means treating savings like a bill: the moment money comes in, a set amount goes to savings before anything else. It works because you then spend from what's left, instead of hoping something remains at month end."
+  },
+  {
+    "id": "needs-vs-wants",
+    "question": "How do I tell needs from wants?",
+    "keywords": ["needs vs wants", "needs and wants", "necessary", "essential", "luxury"],
+    "answer": "A need is something you'd face real consequences without — rent, basic food, transport to class, fees. A want is nice but optional — eating out, new clothes, the premium data bundle. Many purchases mix both: lunch is a need, but a KES 800 restaurant lunch is mostly a want."
+  },
+  {
+    "id": "impulse-spending",
+    "question": "How do I stop impulse spending?",
+    "keywords": ["impulse", "impulse buying", "stop spending", "overspending", "spend too much", "self control"],
+    "answer": "Use a 24-hour rule: for anything unplanned above a set amount (say KES 1,000), wait a day before buying. Remove saved payment shortcuts and unsubscribe from shopping promotions. Most impulse urges fade within a day; the ones that don't are usually things you genuinely want."
+  },
+  {
+    "id": "sinking-fund",
+    "question": "What is a sinking fund?",
+    "keywords": ["sinking fund", "save for known expense", "fees next semester", "plan ahead", "future expense"],
+    "answer": "A sinking fund is money you save a little at a time for a cost you know is coming — next semester's fees, a laptop, a trip home in December. Divide the cost by the months left and save that each month, so the bill doesn't arrive as a shock. In Akiba, a savings goal with a deadline works exactly like this."
+  },
+  {
+    "id": "savings-goal",
+    "question": "How do I set a good savings goal?",
+    "keywords": ["savings goal", "set a goal", "goal deadline", "target amount", "saving target"],
+    "answer": "Make it specific and dated: \"KES 45,000 for a laptop by April\" beats \"save more\". Divide the amount by the months left to get a monthly target, and check whether that fits your budget — if not, extend the deadline rather than abandoning the goal. I'll tell you if a goal falls behind its pace."
+  },
+  {
+    "id": "mshwari",
+    "question": "What is M-Shwari and is it good for saving?",
+    "keywords": ["m-shwari", "mshwari", "lock savings", "m shwari", "mpesa savings"],
+    "answer": "M-Shwari is a savings and loan account linked to your M-Pesa, offered by Safaricom with NCBA. Its savings and Lock Savings accounts pay some interest and keep money one step away from daily spending, which helps. Its loans charge a fee upfront and late repayment can get you listed with a credit bureau, so borrow from it only for genuine emergencies."
+  },
+  {
+    "id": "sacco",
+    "question": "What is a SACCO and should I join one?",
+    "keywords": ["sacco", "saccos", "cooperative", "co-operative", "dividends", "member savings"],
+    "answer": "A SACCO is a member-owned savings and credit co-operative: you save regularly, earn interest or dividends on your deposits, and can usually borrow a multiple of what you've saved at lower rates than mobile lenders. Check that it is registered and regulated, and read the rules on minimum monthly contributions and withdrawals before joining — money is often hard to take out quickly."
+  },
+  {
+    "id": "money-market-fund",
+    "question": "What is a money market fund?",
+    "keywords": ["money market fund", "mmf", "money market", "unit trust", "interest daily", "cma"],
+    "answer": "A money market fund pools many people's money into low-risk short-term investments and pays returns that are usually higher than a normal savings account. In Kenya they are regulated by the Capital Markets Authority, many accept small minimum deposits, and withdrawals typically take a few working days. Returns vary and are not guaranteed, so compare funds and only use a CMA-licensed manager."
+  },
+  {
+    "id": "mshwari-vs-sacco-vs-mmf",
+    "question": "M-Shwari vs SACCO vs money market fund — which is better for a student?",
+    "keywords": ["versus", "compare", "which is better", "where to save", "best place to save"],
+    "answer": "For money you may need soon, a money market fund or M-Shwari Lock Savings keeps it reachable while earning something. A SACCO suits steady long-term saving and gives access to cheaper loans, but money is harder to withdraw. Many students keep an emergency fund in an MMF and build SACCO savings once their income is regular."
+  },
+  {
+    "id": "mobile-loans",
+    "question": "Are mobile loan apps a good idea?",
+    "keywords": ["mobile loan", "loan app", "digital lender", "borrow app", "quick loan", "instant loan", "tala", "branch"],
+    "answer": "Mobile loans are fast but expensive: fees on short loans add up to very high yearly costs, and missed repayments can get you listed with a credit reference bureau, which follows you into future applications. Use them only for real emergencies with a clear repayment plan, never for everyday spending or to repay another loan."
+  },
+  {
+    "id": "fuliza",
+    "question": "Is Fuliza expensive?",
+    "keywords": ["fuliza", "overdraft", "mpesa overdraft", "negative balance"],
+    "answer": "Fuliza is an M-Pesa overdraft: it lets a payment go through when your balance is short, but it charges an access fee plus daily charges until it's repaid. Used regularly, those small charges become a costly habit. If you find yourself using it every month, that's a sign your budget needs a buffer, not more credit."
+  },
+  {
+    "id": "loan-trap",
+    "question": "How do I get out of a cycle of borrowing?",
+    "keywords": ["debt cycle", "borrowing to repay", "loan trap", "stuck in debt", "many loans", "owe money"],
+    "answer": "List every debt with its balance and charges, stop taking new loans, and pay the most expensive one first while paying the minimum on the rest. Cut one spending category hard for a month and send the difference to debt. If you're overwhelmed, talk to someone you trust or your university's student support office before it grows."
+  },
+  {
+    "id": "debt-snowball-avalanche",
+    "question": "Should I pay off the smallest or the most expensive debt first?",
+    "keywords": ["snowball", "avalanche", "which debt first", "pay off debt", "repay loans"],
+    "answer": "Paying the most expensive debt first (the avalanche method) saves the most money. Paying the smallest balance first (the snowball method) gives quicker wins that keep you motivated. Either works if you stick to it — the key is paying more than the minimum on one debt at a time."
+  },
+  {
+    "id": "crb",
+    "question": "What is CRB listing?",
+    "keywords": ["crb", "credit reference bureau", "blacklisted", "credit score", "credit history"],
+    "answer": "Lenders report your repayment history to credit reference bureaus (CRBs). Repaying late can lead to a negative listing that makes future loans harder or more expensive to get, while repaying on time builds a good record. You can request your own credit report from a licensed CRB to check what's listed."
+  },
+  {
+    "id": "helb",
+    "question": "How should I manage my HELB money?",
+    "keywords": ["helb", "student loan", "higher education loan", "upkeep", "disbursement"],
+    "answer": "Treat a HELB disbursement as a semester's budget, not a windfall: on the day it arrives, set aside fees and rent first, then divide the rest by the weeks until the next disbursement. Remember it's a loan you'll repay after you finish, so borrow only what you need."
+  },
+  {
+    "id": "windfall",
+    "question": "What should I do with a lump sum or gift money?",
+    "keywords": ["windfall", "lump sum", "gift money", "bonus", "extra money", "received money"],
+    "answer": "Split it before you spend it: for example half to savings or debt, a portion to an upcoming cost like fees, and a small part to enjoy guilt-free. Deciding the split on day one stops a lump sum from quietly disappearing into daily spending."
+  },
+  {
+    "id": "betting",
+    "question": "What does betting really cost?",
+    "keywords": ["betting", "bet", "gambling", "sports betting", "jackpot", "odds"],
+    "answer": "Betting companies set odds so that, over time, bettors as a group lose — and taxes on stakes and winnings take a further cut. Small daily bets feel harmless but add up: KES 100 a day is about KES 3,000 a month. If you bet, set a fixed monthly limit you can afford to lose, and if it's becoming hard to stop, talk to someone you trust."
+  },
+  {
+    "id": "track-cash",
+    "question": "How do I track cash spending?",
+    "keywords": ["cash", "track cash", "cash spending", "withdraw", "cash out"],
+    "answer": "Cash disappears without a trace, so log it as you spend — or at least log each withdrawal and note what it was for. An easy habit is to record cash purchases at the end of each day. Paying by M-Pesa where you can leaves a record automatically."
+  },
+  {
+    "id": "track-spending",
+    "question": "Why should I track my spending?",
+    "keywords": ["track spending", "record expenses", "log transactions", "expense tracking", "where does my money go"],
+    "answer": "You can't fix what you can't see: tracking shows exactly where your money goes and usually reveals one or two categories eating more than you expected. A month of honest logging gives me enough data to spot spikes and patterns for you."
+  },
+  {
+    "id": "mpesa-charges",
+    "question": "How do I reduce M-Pesa transaction charges?",
+    "keywords": ["mpesa charges", "transaction fees", "send money fees", "till", "buy goods", "paybill charges", "withdrawal fees"],
+    "answer": "Paying a merchant through a Buy Goods till is free for you, while sending money and withdrawing cash attract fees on most amounts. Pay shops by till instead of sending to a personal number, and withdraw cash in fewer, larger amounts rather than many small ones."
+  },
+  {
+    "id": "airtime-data",
+    "question": "How can I spend less on airtime and data?",
+    "keywords": ["data bundles", "airtime", "save on data", "internet costs", "wifi", "bundles expensive"],
+    "answer": "Daily bundles cost far more per GB than weekly or monthly ones, so buy the longest bundle you can afford once. Use campus or hostel Wi-Fi for large downloads and updates, and turn off auto-play and background data. Check whether your provider offers student or night bundles."
+  },
+  {
+    "id": "food-costs",
+    "question": "How can I spend less on food?",
+    "keywords": ["food budget", "save on food", "cook", "eating out", "groceries", "meal plan", "lunch costs"],
+    "answer": "Cooking with friends and splitting staples bought in bulk — unga, rice, beans, cooking oil — is much cheaper than buying meals daily. Plan the week's meals before shopping and buy fresh produce from the market rather than the supermarket. Keep eating out as a planned treat, not the default."
+  },
+  {
+    "id": "transport-costs",
+    "question": "How can I spend less on transport?",
+    "keywords": ["transport costs", "fare", "matatu", "boda", "save on transport", "commute"],
+    "answer": "Plan trips so one journey covers several errands, and avoid peak-hour fares where matatu prices rise. Short distances are often cheaper and quicker on foot than by boda. If you commute daily, work out your weekly fare budget and carry only that."
+  },
+  {
+    "id": "split-rent",
+    "question": "How do I split rent and bills with roommates?",
+    "keywords": ["split rent", "roommates", "shared house", "share bills", "roommate", "kplc split", "water bill"],
+    "answer": "Agree the split in writing before moving in — rent, KPLC tokens, water, Wi-Fi and garbage — and who pays what by which date. Pay the landlord through a paybill or till so there's a record, and have each person send their share to one person a few days early. Revisit the split if usage is very uneven."
+  },
+  {
+    "id": "rent",
+    "question": "How much of my income should go to rent?",
+    "keywords": ["rent too high", "affordable rent", "hostel", "accommodation", "how much rent"],
+    "answer": "A common guide is to keep rent around a third of your income, but students often pay more. If rent leaves you short every month, sharing a room, choosing a hostel slightly further away, or splitting utilities can free up more than cutting small expenses ever will."
+  },
+  {
+    "id": "student-discounts",
+    "question": "Where can students get discounts?",
+    "keywords": ["student discount", "student price", "student id", "discounts", "student offers"],
+    "answer": "Always ask whether there's a student price — gyms, cyber cafés, events and some shops offer one if you show your student ID. Many software tools and streaming services have student plans, so check before paying full price. Campus cafeterias are usually cheaper than nearby restaurants for the same meal."
+  },
+  {
+    "id": "subscriptions",
+    "question": "How do I manage subscriptions?",
+    "keywords": ["subscriptions", "netflix", "showmax", "spotify", "recurring payments", "cancel subscription"],
+    "answer": "List every subscription and its monthly cost, then cancel any you haven't used in the last two weeks. Share family or group plans where allowed, and rotate services — subscribe to one for a month, then switch — rather than paying for all at once."
+  },
+  {
+    "id": "chama",
+    "question": "What is a chama and is it a good way to save?",
+    "keywords": ["chama", "merry go round", "group savings", "investment group", "table banking"],
+    "answer": "A chama is a group that pools regular contributions — sometimes paying out to members in turn, sometimes investing together. It builds discipline because the group keeps you accountable. Agree written rules on contributions, payouts and what happens if someone stops paying, and keep records of every transaction."
+  },
+  {
+    "id": "lending-friends",
+    "question": "Should I lend money to friends?",
+    "keywords": ["lend money", "lending friends", "friend owes me", "borrow from friend", "loan to friend"],
+    "answer": "Only lend what you could afford never to get back, and agree a repayment date upfront. Sending via M-Pesa leaves a record if you need to remind them. If saying no is hard, it's fine to say your budget is already allocated this month."
+  },
+  {
+    "id": "side-hustle",
+    "question": "How can I earn extra money as a student?",
+    "keywords": ["side hustle", "earn money", "part time", "extra income", "online jobs", "freelance"],
+    "answer": "Tutoring, freelance writing or design, campus deliveries and part-time work fit around classes. Be wary of any 'job' that asks you to pay a registration fee first — that's a common scam. Log hustle income in Akiba so your savings rate reflects everything you earn."
+  },
+  {
+    "id": "scams",
+    "question": "How do I avoid M-Pesa scams?",
+    "keywords": ["scam", "fraud", "fake message", "wrong number", "reversal", "con", "pin"],
+    "answer": "Never share your M-Pesa PIN — Safaricom will never ask for it. If someone says they sent money to you by mistake, don't send it back yourself; real reversals go through Safaricom. Check your actual M-Pesa balance before believing any 'you have received' message."
+  },
+  {
+    "id": "lipa-mdogo-mdogo",
+    "question": "Is buying a phone on instalments a good idea?",
+    "keywords": ["lipa mdogo mdogo", "instalments", "installments", "buy now pay later", "phone financing", "hire purchase"],
+    "answer": "Paying in instalments makes an item feel affordable, but the total you pay is usually much higher than the cash price, and missed payments can lock the device or affect your credit record. Compare the full instalment total with the cash price, and consider saving for a few months instead."
+  },
+  {
+    "id": "interest-compounding",
+    "question": "What is compound interest?",
+    "keywords": ["compound interest", "compounding", "interest on interest", "grow money"],
+    "answer": "Compound interest means you earn interest on your interest, not just on what you put in, so savings grow faster the longer they're left alone. Starting to save early matters more than starting with a large amount. The same maths works against you on debt that isn't repaid."
+  },
+  {
+    "id": "inflation",
+    "question": "What is inflation and why does it matter?",
+    "keywords": ["inflation", "prices rising", "cost of living", "value of money"],
+    "answer": "Inflation is the general rise in prices over time, which means the same shilling buys a little less each year. Money left idle in a wallet slowly loses value, which is why savings you won't need soon belong somewhere that earns a return."
+  },
+  {
+    "id": "investing-basics",
+    "question": "Should a student start investing?",
+    "keywords": ["invest", "investing", "investment", "shares", "stocks", "nse", "crypto", "treasury bills", "bonds"],
+    "answer": "Build an emergency fund first, then consider investing money you won't need for several years. Lower-risk options like money market funds suit small amounts; shares and bonds carry more risk and need research, and crypto is highly volatile. Only use licensed providers and never invest borrowed money."
+  },
+  {
+    "id": "savings-rate",
+    "question": "What is a savings rate?",
+    "keywords": ["savings rate", "how much to save", "percentage saved", "save percent"],
+    "answer": "Your savings rate is the share of your income you keep: (income − spending) ÷ income. Ten percent is a good starting point and twenty percent is strong. I calculate yours from the income and expenses you log each month."
+  },
+  {
+    "id": "health-cover",
+    "question": "Do I need health insurance as a student?",
+    "keywords": ["health insurance", "sha", "nhif", "medical cover", "hospital bill", "health cover"],
+    "answer": "A single hospital visit can wipe out weeks of savings. The Social Health Authority (SHA) replaced NHIF in 2024 — check whether you're covered as a dependant or need to register yourself, and what your university's medical scheme covers."
+  },
+  {
+    "id": "semester-start",
+    "question": "How do I budget for the start of a semester?",
+    "keywords": ["semester start", "new semester", "opening", "back to school", "fees and books"],
+    "answer": "The start of a semester bunches costs together: fees, rent deposits, books and supplies. List them early, pay the fixed ones first, and set up a savings goal during the break so the costs don't land all at once. Buying second-hand textbooks or sharing them can save a lot."
+  },
+  {
+    "id": "categories-help",
+    "question": "How does Akiba categorise my transactions?",
+    "keywords": ["categorise", "categories", "category suggestion", "auto category", "classify", "uncategorised"],
+    "answer": "When you log an expense, Akiba suggests a category from its description and amount using a model trained on Kenyan merchant names — confident suggestions are preselected, uncertain ones appear as options to tap. You can always change it, and your corrections are recorded to improve the next version."
+  }
+]

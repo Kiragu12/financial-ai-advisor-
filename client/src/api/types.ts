@@ -92,6 +92,20 @@ export type Transaction = {
 export type TransactionsResponse = { transactions: Transaction[] };
 export type TransactionResponse = { transaction: Transaction };
 
+// --- Categoriser ---
+export type SuggestedCategory = {
+  categoryId: string | null;
+  category: string;
+  confidence: number;
+};
+export type CategorySuggestion = {
+  categoryId: string | null;
+  categoryName: string;
+  confidence: number;
+  autoAssign: boolean;
+  alternatives: SuggestedCategory[];
+};
+
 // --- Transfers ---
 export type Transfer = {
   id: string;

@@ -65,6 +65,9 @@ export interface CreateTransactionInput {
   categoryId?: string;
   description?: string;
   transactionDate?: string;
+  /** The categoriser's suggestion, so the server can record user corrections. */
+  predictedCategoryId?: string;
+  predictionConfidence?: number;
 }
 
 function invalidateMoneyViews(qc: ReturnType<typeof useQueryClient>) {

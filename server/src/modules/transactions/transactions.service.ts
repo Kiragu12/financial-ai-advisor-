@@ -70,6 +70,15 @@ export async function recordTransaction(
       throw AppError.badRequest('Insufficient funds in this wallet.');
     }
 
+    // The categoriser's suggestion is advisory metadata: keep it only if it is a
+    // category this user can actually use, otherwise silently drop it rather
+    // than failing the user's transaction over it.
+    const predictedCategoryId =
+      input.predictedCategoryId &&
+      (await categoryRepo.findUsableById(userId, input.predictedCategoryId, db))
+        ? input.predictedCategoryId
+        : null;
+
     const record = await txnRepo.insert(db, {
       userId,
       walletId: input.walletId,
@@ -78,6 +87,8 @@ export async function recordTransaction(
       amount: input.amount,
       description: input.description ?? null,
       transactionDate,
+      predictedCategoryId,
+      predictionConfidence: predictedCategoryId ? (input.predictionConfidence ?? null) : null,
     });
     await walletRepo.adjustBalance(db, userId, input.walletId, delta);
     await gamificationService.recordActivity(userId, transactionDate);

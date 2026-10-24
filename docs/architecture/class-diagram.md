@@ -56,6 +56,9 @@ classDiagram
         +String description
         +Date transactionDate
         +UUID transferId
+        +UUID predictedCategoryId
+        +Decimal predictionConfidence
+        +Boolean userCorrected
         +DateTime createdAt
         +DateTime updatedAt
         +DateTime deletedAt
@@ -167,10 +170,55 @@ classDiagram
 
     class AdvisorService {
         +createConversation(userId, input)
-        +askQuestion(userId, conversationId, question)
-        +buildFinancialContext(userId)
-        +buildPrompt(context, messages, question)
-        +saveAssistantResponse(conversationId, response)
+        +sendMessage(userId, conversationId, content)
+        +buildFinancialContext(userId) FinancialSnapshot
+    }
+
+    class AdvisorClient {
+        +generateReply(history, snapshot) String
+    }
+
+    class ReplyRouter {
+        +classifyIntent(message) Intent
+        +answerDataQuestion(message, snapshot)
+        +touchesRiskyTopic(texts) Boolean
+    }
+
+    class InsightEngine {
+        +Rule[] rules
+        +runInsights(snapshot) Finding[]
+    }
+
+    class Finding {
+        +String id
+        +Severity severity
+        +String title
+        +String detail
+        +String suggestion
+        +Number score
+    }
+
+    class KnowledgeBase {
+        +KnowledgeEntry[] entries
+        +retrieve(query) Retrieval
+    }
+
+    class CategoriserService {
+        +suggest(userId, description, amount) Suggestion
+    }
+
+    class NaiveBayesModel {
+        +String[] classes
+        +Number[] classLogPrior
+        +Map vocabulary
+        +Number[][] featureLogProb
+        +predict(description, amount) Prediction
+    }
+
+    class TextUtils {
+        +tokenise(text) String[]
+        +termFrequency(tokens) Map
+        +cosineSimilarity(a, b) Number
     }
 
     User "1" --> "0..*" Wallet : owns
@@ -205,6 +253,16 @@ classDiagram
     AdvisorService ..> Transaction : summarizes
     AdvisorService ..> Wallet : summarizes
     AdvisorService ..> SavingsGoal : summarizes
+    AdvisorService ..> AdvisorClient : generates reply
+    AdvisorClient ..> ReplyRouter : routes message
+    AdvisorClient ..> InsightEngine : advice
+    AdvisorClient ..> KnowledgeBase : general questions
+    InsightEngine "1" --> "0..*" Finding : produces
+    CategoriserService ..> NaiveBayesModel : predicts
+    CategoriserService ..> Category : resolves name
+    NaiveBayesModel ..> TextUtils : tokenises
+    KnowledgeBase ..> TextUtils : tokenises
+    TransactionService ..> Transaction : records correction
 ```
 
 ## Notes
@@ -224,3 +282,6 @@ classDiagram
 - A `SavingsGoal` receives many `GoalContribution` records.
 - `AdvisorConversation` and `AdvisorMessage` preserve AI advisor history.
 - `AdvisorService` builds context from trusted stored data rather than relying on client-side summaries.
+- The advisor makes no external calls: `AdvisorClient` composes replies from the `InsightEngine` (rules over the user's own aggregates), the `KnowledgeBase` (TF-IDF retrieval) and templates.
+- `NaiveBayesModel` and `KnowledgeBase` share one `TextUtils` tokeniser — one implementation, two consumers.
+- `Transaction.predictedCategoryId` / `userCorrected` record the categoriser's suggestion and whether the user overrode it, for the next training run.

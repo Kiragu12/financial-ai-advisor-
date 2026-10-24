@@ -24,6 +24,7 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, headers, ...rest } = options;
+
   const init: RequestInit = {
     ...rest,
     // Send and receive the httpOnly auth cookie on every request. Required for

@@ -17,6 +17,7 @@ import { budgetsRouter } from './modules/budgets/budgets.routes.js';
 import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
 import { gamificationRouter } from './modules/gamification/gamification.routes.js';
 import { advisorRouter } from './modules/advisor/advisor.routes.js';
+import { categoriserRouter } from './modules/categoriser/categoriser.routes.js';
 
 export function createApp() {
   const app = express();
@@ -52,6 +53,7 @@ export function createApp() {
   app.use('/api/dashboard', dashboardRouter);
   app.use('/api/gamification', gamificationRouter);
   app.use('/api/advisor', advisorRouter);
+  app.use('/api/categoriser', categoriserRouter);
 
   app.use((_req, res) => {
     res.status(404).json({

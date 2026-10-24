@@ -60,6 +60,11 @@ export const queryKeys = {
     summary: ['gamification', 'summary'] as const,
   },
 
+  categoriser: {
+    suggest: (description: string, amount: number) =>
+      ['categoriser', 'suggest', description, amount] as const,
+  },
+
   advisor: {
     all: ['advisor'] as const,
     conversations: ['advisor', 'conversations'] as const,
